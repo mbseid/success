@@ -1,6 +1,9 @@
-import { useMemo } from 'react';
+
+import {createContext} from 'react';
+
+import createCache from '@emotion/cache';
+
 // material
-import { CssBaseline } from '@mui/material';
 import { ThemeProvider as MUIThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
 //
 import palette from './palette';
@@ -8,27 +11,35 @@ import typography from './typography';
 import componentsOverride from './overrides';
 import shadows, { customShadows } from './shadows';
 
-export default function ThemeProvider({ children }) {
-  const themeOptions = useMemo(
-    () => ({
-      palette,
-      shape: { borderRadius: 8 },
-      typography,
-      shadows,
-      customShadows,
-    }),
-    []
-  );
+export function createEmotionCache() {
+  return createCache({ key: 'css' });
+}
 
-  const theme = createTheme(themeOptions);
+export const clientStyleContext = createContext({
+  reset: () => {},
+});
+
+export function createTheTheme() {
+  const theme = createTheme({
+    palette,
+    shape: { borderRadius: 8 },
+    typography,
+    shadows,
+    customShadows,
+  });
   theme.components = componentsOverride(theme);
 
-  return (
-    <StyledEngineProvider injectFirst>
-      <MUIThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </MUIThemeProvider>
-    </StyledEngineProvider>
-  );
+  return theme;
 }
+
+export const theme = createTheTheme();
+
+//   return (
+//     <StyledEngineProvider injectFirst>
+//       <MUIThemeProvider theme={theme}>
+//         <CssBaseline />
+//         {children}
+//       </MUIThemeProvider>
+//     </StyledEngineProvider>
+//   );
+// }

@@ -1,10 +1,8 @@
 import React from 'react';
 
 import { useState } from 'react';
-import { useTracker } from 'meteor/react-meteor-data';
-import { Me } from '~/api/me';
 
-import { Outlet } from 'react-router-dom';
+import { Outlet } from '@remix-run/react';
 // material
 import { styled } from '@mui/material/styles';
 //
@@ -40,11 +38,9 @@ const MainStyle = styled('div')(({ theme }) => ({
 export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
 
-  const me = useTracker(() => {
-    return Me.findOne()
-  }, []);
+  const me = {
 
-  console.log("me", me)
+  }
   return (
     <RootStyle>
       <DashboardNavbar onOpenSidebar={() => setOpen(true)} me={me} />
