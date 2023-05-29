@@ -2,6 +2,14 @@
 
 export default function Input(theme) {
   return {
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          marginTop: 8,
+          marginBottom: 4
+        }
+      }
+    },
     MuiInputBase: {
       styleOverrides: {
         root: {

@@ -1,12 +1,6 @@
 import {
-  isRouteErrorResponse,
   Link,
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  useRouteError,
+  useNavigate
 } from "@remix-run/react";
 
 // @mui
@@ -27,11 +21,16 @@ const UnstyledLink = styled(Link)((theme) => {
 })
 
 export const meta = () => {
-  return [{ title: "New Remix App" }];
+  return [
+    { title: "Success" }
+  ];
 };
 
 export default function Index(linkCount = 0, peopleCount = 0, projects = []) {
+  
   projects = []
+  const navigate = useNavigate();
+
   return (
     <Page title="Dashboard">
       <Container maxWidth="xl">

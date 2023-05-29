@@ -1,12 +1,20 @@
+version: '3.9' 
+
 services:
   db:
     image: postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: "pg_isready -U postgres"
+      start_period: 20s
+      interval: 5s
+      timeout: 5s
+      retries: 5
   frontend:
     build: frontend
     command: npm run dev
@@ -17,6 +25,7 @@ services:
       - "8002:8002"
     environment:
       - API_HOST=localhost:8000
+      - NODE_ENV=development
     depends_on:
       - web
   web:
@@ -30,5 +39,9 @@ services:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    restart: always
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+volumes:
+    pgdata:
