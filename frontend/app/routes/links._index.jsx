@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link as RouterLink } from '@remix-run/react';
+import { Link as RouterLink, useLoaderData } from '@remix-run/react';
+import { json } from '@remix-run/node';
 // material
 import { Grid, Button, Container, Stack, Typography } from '@mui/material';
 // components
@@ -8,9 +9,27 @@ import Iconify from '~/components/Iconify';
 import { LinkCard, LinksSort } from '~/components/link';
 import SearchBar from '~/components/SearchBar';
 
+import { graphQLClient, gql } from '~/graphql';
+
+const query = gql`
+  query GetLinks {
+    links {
+      id
+      title
+      url
+      tags
+    }
+  }
+`;
+export async function loader({ request, params }){
+    const { data } = await graphQLClient.query({
+        query,
+    });
+    return json({ links: data.links });
+}
 export default function Links(){
+  const { links } = useLoaderData();
   const [searchQuery, setSearchQuery] = useState('')
-  const links = []
   
   return (
     <Page title="Links">

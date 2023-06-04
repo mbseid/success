@@ -1,17 +1,12 @@
 import React from 'react';
 
 import PropTypes from 'prop-types';
-import { Link as RouterLink } from 'react-router-dom';
 // material
 import { alpha, styled } from '@mui/material/styles';
 import { Box, Link, Card, Grid, Avatar, Typography, CardContent } from '@mui/material';
-// utils
-import { fDate } from '~//utils/formatTime';
-import { fShortenNumber } from '~//utils/formatNumber';
 //
-import SvgIconStyle from '~//components/SvgIconStyle';
-import Iconify from '~//components/Iconify';
-import EditMenu from '../EditMenu';
+import Iconify from '~/components/Iconify';
+import EditMenu from '~/components/EditMenu';
 
 // ----------------------------------------------------------------------
 

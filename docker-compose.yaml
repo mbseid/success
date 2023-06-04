@@ -24,7 +24,7 @@ services:
       - "3000:3000"
       - "8002:8002"
     environment:
-      - API_HOST=localhost:8000
+      - API_HOST=web:8000
       - NODE_ENV=development
     depends_on:
       - web

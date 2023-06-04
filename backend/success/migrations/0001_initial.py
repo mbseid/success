@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='Link',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('hidden', models.BinaryField(default=False)),
+                ('hidden', models.BooleanField(default=False)),
                 ('url', models.CharField()),
                 ('title', models.CharField()),
                 ('description', models.CharField()),
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             name='People',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('hidden', models.BinaryField(default=False)),
+                ('hidden', models.BooleanField(default=False)),
                 ('name', models.CharField()),
                 ('email', models.CharField()),
                 ('team', models.CharField()),
@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
             name='Project',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('hidden', models.BinaryField(default=False)),
+                ('hidden', models.BooleanField(default=False)),
                 ('name', models.CharField()),
                 ('description', models.CharField()),
                 ('due', models.DateField()),
@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
             name='PeopleLog',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('hidden', models.BinaryField(default=False)),
+                ('hidden', models.BooleanField(default=False)),
                 ('date', models.DateField()),
                 ('note', models.TextField()),
                 ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='success.people')),

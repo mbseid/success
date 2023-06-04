@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 
 class SuccessModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    hidden = models.BinaryField(default=False)
+    hidden = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -13,7 +13,7 @@ class SuccessModel(models.Model):
 class Link(SuccessModel):
     url = models.CharField()
     title = models.CharField()
-    description = models.CharField()
+    description = models.CharField(blank=True)
     tags = ArrayField(models.CharField())
 
 class Person(SuccessModel):

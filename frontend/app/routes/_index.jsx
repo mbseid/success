@@ -10,7 +10,7 @@ import Page from '~/components/Page';
 import AppWidgetSummary from '~/dashboard/AppWidgetSummary';
 import Iconify from '~/components/Iconify';
 
-import { colorCode as projectColorCode } from '~/projects/utils/colors';
+import { colorCode as projectColorCode } from '~/utils/colors';
 
 
 const UnstyledLink = styled(Link)((theme) => {

@@ -4,7 +4,10 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useFormik } from 'formik';
+import { useSubmit } from '@remix-run/react'
 import * as yup from 'yup';
+import { jsonToFormData } from '~/utils/formUtils';
+
 
 const linkValidation = yup.object({
     title: yup
@@ -17,16 +20,21 @@ const linkValidation = yup.object({
       .array().of(yup.string())
   });
 
-export default function LinkForm({handleSubmit, prefilledModel}){
+export default function LinkForm({path, prefilledModel}){
     const [tags, setTags] = useState(prefilledModel.tags || []);
     const [tagList, setTagList] = useState([]);
+    const submit = useSubmit();
+
 
     const formik = useFormik({
         initialValues: prefilledModel,
         validationSchema: linkValidation,
         onSubmit: (values) => {
-            handleSubmit(values)
-        },
+          submit(jsonToFormData(values), {
+            method: "post",
+            action: path
+          })
+        }
     });
     return (
       <form onSubmit={formik.handleSubmit}>
@@ -53,8 +61,10 @@ export default function LinkForm({handleSubmit, prefilledModel}){
         <Autocomplete
             multiple
             value={formik.values.tags}
-            onChange={formik.handleChange}
-            id="tags-outlined"
+            onChange={(e, values) => formik.setFieldValue("tags", values)}
+            id="tags"
+            name="tags"
+            labels="Tags"
             options={tagList}
             defaultValue={[]}
             freeSolo

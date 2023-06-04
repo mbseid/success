@@ -1,3 +1,4 @@
 django
-djangorestframework
+django-extensions
+strawberry-graphql-django
 psycopg2

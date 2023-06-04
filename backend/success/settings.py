@@ -26,19 +26,19 @@ SECRET_KEY = 'django-insecure-w0wtt)!nl7uq6zff!83dl3&s9-q#6d=f@_)&e2h#c(6k^kefxt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['web', 'localhost']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
+    'strawberry.django',
     'success'
 ]
 
