@@ -29,6 +29,7 @@ export const action = async ({ request }) => {
   return redirect(`/links`);
 };
 
+export const loader = async({})
 export default function NewLink() {
     const actionData = useActionData();
 

@@ -1,12 +1,19 @@
 import strawberry
+import strawberry_django
+
 from strawberry_django import mutations
 
 from typing import List
 from .types import Link, LinkInput
+from . import models
 
 @strawberry.type
 class Query:
     links: List[Link] = strawberry.django.field()
+    
+    @strawberry_django.field
+    def tags(self) -> List[str]:
+        return models.Link.objects.unique_tags()
 
 @strawberry.type
 class Mutation:

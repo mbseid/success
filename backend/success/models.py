@@ -1,5 +1,7 @@
 import uuid
+
 from django.db import models
+from django.db.models import Count, F, Func
 from django.contrib.postgres.fields import ArrayField
 
 class SuccessModel(models.Model):
@@ -10,11 +12,17 @@ class SuccessModel(models.Model):
         abstract = True
 
 
+class LinkManager(models.Manager):
+    def unique_tags(self):
+        return self.annotate(elems=Func(F('tags'), function='unnest')).values_list('elems', flat=True).distinct()
+
 class Link(SuccessModel):
     url = models.CharField()
     title = models.CharField()
     description = models.CharField(blank=True)
     tags = ArrayField(models.CharField())
+
+    objects = LinkManager()
 
 class Person(SuccessModel):
     name = models.CharField()

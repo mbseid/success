@@ -19,13 +19,14 @@ const query = gql`
       url
       tags
     }
+    tags
   }
 `;
 export async function loader({ request, params }){
     const { data } = await graphQLClient.query({
         query,
     });
-    return json({ links: data.links });
+    return json({ ...data });
 }
 export default function Links(){
   const { links } = useLoaderData();
