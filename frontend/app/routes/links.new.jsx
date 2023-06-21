@@ -1,6 +1,6 @@
 import React from 'react';
-import { useNavigate, useSearchParams, useActionData } from "@remix-run/react";
-import { redirect } from "@remix-run/node"; // or cloudflare/deno
+import { useNavigate, useSearchParams, useActionData, useLoaderData } from "@remix-run/react";
+import { redirect, json } from "@remix-run/node";
 
 import Page from '~/components/Page';
 import { Grid, Button, Container, Stack, Typography } from '@mui/material';
@@ -16,6 +16,12 @@ mutation ($data: LinkInput!) {
 }
 `;
 
+const TagsQuery = gql`
+  query GetLinkTags {
+    tags
+  }
+`;
+
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
@@ -29,9 +35,17 @@ export const action = async ({ request }) => {
   return redirect(`/links`);
 };
 
-export const loader = async({})
+export const loader = async () => {
+  const { data } = await graphQLClient.query({
+    query: TagsQuery
+  })
+  return json(data);
+}
+
 export default function NewLink() {
     const actionData = useActionData();
+    const { tags } = useLoaderData();
+
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -51,7 +65,8 @@ export default function NewLink() {
           </Stack>
           <Grid container>
             <LinkForm path='/links/new'
-                      prefilledModel={prefilledModel} />
+                      prefilledModel={prefilledModel}
+                      globalTags={tags} />
           </Grid>
         </Container>
       </Page>

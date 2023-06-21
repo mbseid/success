@@ -63,7 +63,7 @@ LinkCard.propTypes = {
 };
 
 export default function LinkCard({ item, large = false, latest = false }) {
-  let { _id, title, description, tags, url } = item;
+  let { id, title, description, tags, url } = item;
   tags = tags || [];
   const cover = "";
 
@@ -181,7 +181,7 @@ export default function LinkCard({ item, large = false, latest = false }) {
             ))}
           </TagStyle>
           <EditStyle>
-            <EditMenu editUrl={`/links/${_id}/edit`}
+            <EditMenu editUrl={`/links/${id}/edit`}
                       deleteAction={deleteAction}/>
           </EditStyle>
         </CardContent>

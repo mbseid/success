@@ -20,7 +20,7 @@ const linkValidation = yup.object({
       .array().of(yup.string())
   });
 
-export default function LinkForm({path, prefilledModel, tags = []}){
+export default function LinkForm({path, prefilledModel, globalTags = []}){
     const [tags, setTags] = useState(prefilledModel.tags || []);
     const submit = useSubmit();
 
@@ -64,7 +64,7 @@ export default function LinkForm({path, prefilledModel, tags = []}){
             id="tags"
             name="tags"
             labels="Tags"
-            options={tags}
+            options={globalTags}
             defaultValue={[]}
             freeSolo
             renderTags={(value, getTagProps) =>
