@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate, useSearchParams, useActionData, useLoaderData } from "@remix-run/react";
 import { redirect, json } from "@remix-run/node";
 
@@ -23,7 +22,7 @@ const query = gql`
 
 const UpdateLink = gql`
 mutation ($data: LinkInput!, $filters: LinkFilter) {
-  updateLink(data: $data, filters: $filters) {
+  updateLinks(data: $data, filters: $filters) {
     id
   }
 }

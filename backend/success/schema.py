@@ -19,9 +19,9 @@ class Query:
 @strawberry.type
 class Mutation:
     createLink: Link = mutations.create(LinkInput)
-    updateLink: List[Link] = mutations.update(LinkInput)
+    updateLinks: List[Link] = mutations.update(LinkInput)
+    deleteLinks: List[Link] = mutations.delete()
     # createFruits: List[Fruit] = mutations.create(FruitInput)
     # updateFruits: List[Fruit] = mutations.update(FruitPartialInput)
-    # deleteFruits: List[Fruit] = mutations.delete()
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

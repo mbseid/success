@@ -7,6 +7,7 @@ import { Box, Link, Card, Grid, Avatar, Typography, CardContent } from '@mui/mat
 //
 import Iconify from '~/components/Iconify';
 import EditMenu from '~/components/EditMenu';
+import { useSubmit } from '@remix-run/react';
 
 // ----------------------------------------------------------------------
 
@@ -67,8 +68,13 @@ export default function LinkCard({ item, large = false, latest = false }) {
   tags = tags || [];
   const cover = "";
 
+  const submit = useSubmit();
+
   const deleteAction = () => {
-    alert('not supported yet... Coming soon.')
+    submit(new FormData(), {
+      method: "post",
+      action: `/links/${id}/delete`
+    })
   }
 
   return (
