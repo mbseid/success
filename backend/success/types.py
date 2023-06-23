@@ -22,3 +22,32 @@ class LinkInput:
     title: auto
     url: auto
     tags: List[str]
+
+@strawberry.django.filters.filter(models.Person, lookups=True)
+class PersonFilter:
+    id: auto
+    name: auto
+
+@strawberry.django.type(models.Person, filters=PersonFilter)
+class Person:
+    id: auto
+    name: auto
+    email: auto
+    team: auto
+    role: auto
+    logs: List['PersonLog']
+
+@strawberry.django.type(models.PersonLog)
+class PersonLog:
+    id: auto
+    date: auto
+    note: auto
+    person: Person
+
+@strawberry.django.input(models.Person)
+class PersonInput:
+    name: auto
+    email: auto
+    team: auto
+    role: auto
+

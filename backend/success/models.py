@@ -36,7 +36,11 @@ class Person(SuccessModel):
 class PersonLog(SuccessModel):
     date = models.DateField()
     note = models.TextField()
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    person = models.ForeignKey(
+        Person,
+        related_name='logs',
+        on_delete=models.CASCADE
+    )
 
 class Project(SuccessModel):
     name = models.CharField()
