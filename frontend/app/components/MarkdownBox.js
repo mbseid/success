@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Box } from '@mui/material';
 
-export default MarkdownBox = styled(Box)({
+export default styled(Box)({
     '& ul': {
         padding: 'revert'
     },

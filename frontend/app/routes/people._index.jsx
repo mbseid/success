@@ -163,7 +163,7 @@ export default function People() {
                       </TableCell>
                       <TableCell align="left">{team}</TableCell>
                       <TableCell align="left">{role}</TableCell>
-                      <TableCell align="left">{chatDates.length > 0 && chatDates[0].toDateString()}</TableCell>
+                      <TableCell align="left">{}</TableCell>
                       <TableCell align="right">
                       </TableCell>
                     </TableRow>

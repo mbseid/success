@@ -96,10 +96,12 @@ const Document = withEmotionCache(({ children, title }, emotionCache) => {
 
 export default function App() {
   return (
-    <Document>
-      <DashboardLayout>
-        <Outlet />
-      </DashboardLayout>
-    </Document>
+    <LocalizationProvider dateAdapter={AdapterDateFns} >
+      <Document>
+        <DashboardLayout>
+          <Outlet />
+        </DashboardLayout>
+      </Document>
+    </LocalizationProvider>
   );
 }

@@ -4,7 +4,7 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List
-from .types import Link, LinkInput, Person, PersonInput
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput
 from . import models
 
 @strawberry.type
@@ -27,5 +27,9 @@ class Mutation:
 
     createPerson: Person = mutations.create(PersonInput)
     updatePeople: List[Person] = mutations.update(PersonInput)
+
+    createPersonLog: PersonLog = mutations.create(PersonLogInput)
+    updatePersonLog: List[PersonLog] = mutations.update(PersonLogInput)
+
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
