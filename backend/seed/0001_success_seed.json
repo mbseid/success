@@ -1,0 +1,52 @@
+[
+{
+    "model": "success.person",
+    "pk": "8547716d-820e-41d4-ac29-1f49e647335c",
+    "fields": {
+        "hidden": false,
+        "name": "a",
+        "email": "v",
+        "team": "c",
+        "role": "d"
+    }
+},
+{
+    "model": "success.personlog",
+    "pk": "466bb2fd-e505-48d2-895b-1f2a4a20a870",
+    "fields": {
+        "hidden": false,
+        "date": "2023-06-24",
+        "note": "testing this thing",
+        "person": "8547716d-820e-41d4-ac29-1f49e647335c"
+    }
+},
+{
+    "model": "success.personlog",
+    "pk": "569b782d-a7ac-4503-8eba-9b59b46d71b7",
+    "fields": {
+        "hidden": false,
+        "date": "2023-03-01",
+        "note": "asfasdf",
+        "person": "8547716d-820e-41d4-ac29-1f49e647335c"
+    }
+},
+{
+    "model": "success.personlog",
+    "pk": "bef337d5-5318-4e33-bced-6644d15c086a",
+    "fields": {
+        "hidden": false,
+        "date": "2023-06-24",
+        "note": "testing this thing",
+        "person": "8547716d-820e-41d4-ac29-1f49e647335c"
+    }
+},
+{
+    "model": "success.personlog",
+    "pk": "f6d1061f-e25c-40ab-bcd1-7c7b8cf10841",
+    "fields": {
+        "hidden": false,
+        "date": "2023-06-24",
+        "note": "testing this thing",
+        "person": "8547716d-820e-41d4-ac29-1f49e647335c"
+    }
+}

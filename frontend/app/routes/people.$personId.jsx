@@ -72,12 +72,6 @@ export async function loader({ request, params }){
     return json(newData);
 }
 
-
-// ----------------------------------------------------------------------
-
-ProfileCover.propTypes = {
-};
-
 function ProfileCover({ person }) {
   const { name, team, role } = person;
 

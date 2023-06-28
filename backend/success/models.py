@@ -1,8 +1,11 @@
 import uuid
 
-from django.db import models
+from django.db import models, connection, transaction
 from django.db.models import Count, F, Func
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.search import SearchVectorField
 
 class SuccessModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -48,3 +51,20 @@ class Project(SuccessModel):
     due = models.DateField()
     complete = models.BooleanField(default=False)
     notes = models.TextField()
+
+class SearchIndex(models.Model):
+    item_type = models.CharField(max_length=200)
+    item_id = models.DateField(null=True, default=None) 
+    body = SearchVectorField()
+    
+    class Meta:
+        managed = False
+        db_table = 'success_search_index'
+
+
+@receiver(post_save, sender=Link)
+@receiver(post_save, sender=Person)
+@receiver(post_save, sender=Project)
+def update_view(sender, **kwargs):
+    with connection.cursor() as cursor:
+        cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY success_search_index;")
