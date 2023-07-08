@@ -1,3 +1,4 @@
+from typing import List
 import uuid
 
 from django.db import models, connection, transaction
@@ -5,7 +6,11 @@ from django.db.models import Count, F, Func
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.search import SearchVectorField, SearchVector
+
+from collections import defaultdict
+
+import itertools
 
 class SuccessModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -52,15 +57,41 @@ class Project(SuccessModel):
     complete = models.BooleanField(default=False)
     notes = models.TextField()
 
+class SearchIndexManager(models.Manager):
+    def search(self, query, item_type = None):
+        objects = SearchIndex.objects.annotate(search=SearchVector('body', config='english')).filter(search=query)
+        if item_type:
+            objects = objects.filter(item_type=item_type)
+
+        # Sort objects into type to query
+        grouped_objects = defaultdict(list)
+        for obj in objects:
+            grouped_objects[obj.item_type].append(obj)
+        
+        # get the full objects
+        def find_objects(items: List[SearchIndex], model_class):
+            item_ids = map(lambda x: x.item_id, items)
+            return model_class.objects.filter(pk__in=list(item_ids))
+        
+        # Join the 3 search types together
+        retrieved_objects = itertools.chain(find_objects(grouped_objects['link'], Link), find_objects(grouped_objects['person'], Person), find_objects(grouped_objects['project'], Project))
+        
+        # return in the order of the search results
+        def find_by_id(object):
+            return next(x for x in retrieved_objects if x.id == object.item_id )
+        
+        return list(map(find_by_id, objects))
+
 class SearchIndex(models.Model):
     item_type = models.CharField(max_length=200)
-    item_id = models.DateField(null=True, default=None) 
+    item_id = models.UUIDField(primary_key=True) 
     body = SearchVectorField()
+
+    objects = SearchIndexManager()
     
     class Meta:
         managed = False
         db_table = 'success_search_index'
-
 
 @receiver(post_save, sender=Link)
 @receiver(post_save, sender=Person)

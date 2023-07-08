@@ -1,0 +1,34 @@
+- model: success.link
+  pk: f22e8d9b-0db7-432a-b49f-7783c1ba88b9
+  fields:
+    url: "https://success.mike.seid.io"
+    title: "Success"
+    tags:
+      - "mike"
+      - "work"
+    hidden: false
+
+- model: success.link
+  pk: e0d2fb95-979e-4ee7-9305-375a7b8f03f3
+  fields:
+    url: "https://www.google.com"
+    title: "Google"
+    tags:
+      - "search"
+    hidden: false
+
+- model: success.Person
+  pk: 8c058ccb-20bc-4a83-a5c0-bd17b72a616f
+  fields:
+    name: "Mike Seid"
+    email: "mike@seid.io"
+    team: "Success"
+    role: "Hacker"
+
+- model: success.Person
+  pk: 3b2c387c-19bf-41fc-a676-8d230a6aed5b
+  fields:
+    name: "Chelsea Seid"
+    email: "chelsea@seid.io"
+    team: "Success"
+    role: "Partner"

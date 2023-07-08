@@ -18,6 +18,10 @@ class Query:
     @strawberry_django.field
     def tags(self) -> List[str]:
         return models.Link.objects.unique_tags()
+    
+    @strawberry_django.field
+    def tags(self, query: str) -> List[str]:
+        return models.SearchIndex.objects.search(query)
 
 @strawberry.type
 class Mutation:
