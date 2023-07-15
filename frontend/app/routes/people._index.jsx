@@ -107,6 +107,11 @@ export async function loader({ request, params }){
     });
     return json({ ...data });
 }
+
+export const meta = () => {
+  return [{ title: "People | Success" }];
+}
+
 export default function People() {
   const { people } = useLoaderData();
 

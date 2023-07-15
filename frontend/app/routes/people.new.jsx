@@ -44,7 +44,7 @@ export const action = async ({ request }) => {
       data: person
     }
   })
-  return redirect(`/person/${data.id}`);
+  return redirect(`/people/${data.createPerson.id}`);
 }
 
 export default function NewPerson(){

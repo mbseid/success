@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link as RouterLink, useLoaderData } from '@remix-run/react';
+import { Link as RouterLink, useLoaderData, useFetcher } from '@remix-run/react';
 import { json } from '@remix-run/node';
 // material
 import { Grid, Button, Container, Stack, Typography } from '@mui/material';
@@ -28,9 +28,27 @@ export async function loader({ request, params }){
     });
     return json({ ...data });
 }
+
+export const meta = () => {
+  return [{ title: "Links | Success" }];
+}
+
 export default function Links(){
   const { links } = useLoaderData();
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+
+  const linkSearch = useFetcher();
+
+  const searchLinks = (query) => {
+    setSearchQuery(query);
+    linkSearch.submit({ query }, {
+      method: "get",
+      action: `/links/search`,
+    });
+  }
+
+
   
   return (
     <Page title="Links">
@@ -45,14 +63,23 @@ export default function Links(){
         </Stack>
 
         <Stack mb={5} direction="row" alignItems="center" justifyContent="space-between">
-          <SearchBar placeholder="Search links..." setSearchQuery={setSearchQuery}/>
+          <SearchBar placeholder="Search links..." setSearchQuery={searchLinks}/>
           {/* <LinksSort options={[]} /> */}
         </Stack>
 
         <Grid container spacing={3}>
-          {links.map((link) => (
-            <LinkCard key={link.id} item={link} />
-          ))}
+          {(linkSearch.state === "idle" && linkSearch.data && searchQuery) ?
+          <>
+            {linkSearch.data.search.map((link) => (
+              <LinkCard key={link.id} item={link} />
+            ))}
+          </>
+          :
+          <>
+            {links.map((link) => (
+              <LinkCard key={link.id} item={link} />
+            ))}
+          </>}
         </Grid>
       </Container>
     </Page>

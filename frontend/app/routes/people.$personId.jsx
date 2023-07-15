@@ -72,6 +72,10 @@ export async function loader({ request, params }){
     return json(newData);
 }
 
+export const meta = ({ data }) => {
+  return [{ title: `${data.person.name} | Person | Success` }];
+}
+
 function ProfileCover({ person }) {
   const { name, team, role } = person;
 
@@ -157,6 +161,7 @@ export default function ViewPerson(){
       method: 'post',
       action: `/people/${person.id}/log`
     })
+    setAddNote(false);
   }
 
   const logs = person.logs.map((l) => {

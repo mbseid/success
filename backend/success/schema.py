@@ -3,7 +3,7 @@ import strawberry_django
 
 from strawberry_django import mutations
 
-from typing import List
+from typing import List, Union, Optional
 from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput
 from . import models
 
@@ -20,8 +20,23 @@ class Query:
         return models.Link.objects.unique_tags()
     
     @strawberry_django.field
-    def tags(self, query: str) -> List[str]:
-        return models.SearchIndex.objects.search(query)
+    def search(self, query: str, type: Optional[str] = None) -> List[Union[Link,Person]]:
+        return models.SearchIndex.objects.search(query, type)
+    
+    @strawberry.type
+    class Count:
+
+        @strawberry_django.field
+        def link(self) -> int:
+            return models.Link.objects.count()
+        
+        @strawberry_django.field
+        def people(self) -> int:
+            return models.Person.objects.count()
+    
+    @strawberry.field
+    def count(self) -> Count:
+        return Query.Count()
 
 @strawberry.type
 class Mutation:

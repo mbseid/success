@@ -1,7 +1,9 @@
 import {
   Link,
-  useNavigate
+  useNavigate,
+  useLoaderData
 } from "@remix-run/react";
+import { json } from '@remix-run/node';
 
 // @mui
 import { Grid, Container, Typography, Card, List, ListItem, ListItemText, ListItemSecondaryAction, CardActionArea, styled } from '@mui/material';
@@ -12,6 +14,22 @@ import Iconify from '~/components/Iconify';
 
 import { colorCode as projectColorCode } from '~/utils/colors';
 
+import { graphQLClient, gql } from '~/graphql';
+
+const query = gql`
+  query GetCounts {
+    count {
+      people
+      link
+    }
+  }
+`;
+export async function loader({ request, params }){
+    const { data } = await graphQLClient.query({
+        query,
+    });
+    return json({ ...data });
+}
 
 const UnstyledLink = styled(Link)((theme) => {
   return {
@@ -27,7 +45,8 @@ export const meta = () => {
 };
 
 export default function Index(linkCount = 0, peopleCount = 0, projects = []) {
-  
+  const { count } = useLoaderData();
+
   projects = []
   const navigate = useNavigate();
 
@@ -40,11 +59,11 @@ export default function Index(linkCount = 0, peopleCount = 0, projects = []) {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Link Count" total={linkCount} icon={'ant-design:link-outlined'} onClick={() => navigate('/links')}/>
+            <AppWidgetSummary title="Link Count" total={count.link} icon={'ant-design:link-outlined'} onClick={() => navigate('/links')}/>
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="People" total={peopleCount} color="info" icon={'ant-design:user-outlined'} onClick={() => navigate('/people')}/>
+            <AppWidgetSummary title="People" total={count.people} color="info" icon={'ant-design:user-outlined'} onClick={() => navigate('/people')}/>
           </Grid>
           <Grid item xs={12} sm={6} md={6}>
             <Card sx={{
