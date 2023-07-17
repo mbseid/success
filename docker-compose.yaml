@@ -18,7 +18,9 @@ services:
       timeout: 5s
       retries: 5
   frontend:
-    build: frontend/Dockerfile.dev
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     command: npm run dev
     volumes:
       - ./frontend:/code
@@ -26,12 +28,14 @@ services:
       - "3000:3000"
       - "8002:8002"
     environment:
-      - API_HOST=backend:8000
+      - API_HOST=http://backend:8000
       - NODE_ENV=development
     depends_on:
       - backend
   backend:
-    build: backend/Dockerfile.dev
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/code
