@@ -3,6 +3,8 @@ version: '3.9'
 services:
   db:
     image: postgres
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -16,15 +18,15 @@ services:
       timeout: 5s
       retries: 5
   frontend:
-    image: "success-test-front"
+    image: "ghcr.io/mbseid/success-frontend:main"
     ports:
       - "3000:3000"
     environment:
       - API_HOST=http://backend:8000
     depends_on:
-      - web
+      - backend
   backend:
-    image: ""
+    image: "ghcr.io/mbseid/success-backend:main"
     environment:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
