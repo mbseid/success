@@ -3,3 +3,4 @@ django-extensions
 strawberry-graphql-django
 psycopg2
 pyyaml
+gunicorn
