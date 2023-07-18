@@ -28,7 +28,7 @@ class Link(SuccessModel):
     url = models.CharField()
     title = models.CharField()
     description = models.CharField(blank=True)
-    tags = ArrayField(models.CharField())
+    tags = ArrayField(models.CharField(), blank=True)
 
     objects = LinkManager()
 

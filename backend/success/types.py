@@ -1,7 +1,7 @@
 # types.py
 import strawberry
 from strawberry import auto
-from typing import List
+from typing import List, Optional
 
 from . import models
 

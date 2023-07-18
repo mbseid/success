@@ -15,15 +15,14 @@ const linkValidation = yup.object({
       .required(),
     url: yup
       .string()
+      .url()
       .required(),
     tags: yup
       .array().of(yup.string())
   });
 
 export default function LinkForm({path, prefilledModel, globalTags = []}){
-    const [tags, setTags] = useState(prefilledModel.tags || []);
     const submit = useSubmit();
-
 
     const formik = useFormik({
         initialValues: prefilledModel,
