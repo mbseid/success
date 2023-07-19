@@ -37,11 +37,15 @@ class Person:
     role: auto
     logs: List['PersonLog']
 
+@strawberry.django.order(models.PersonLog)
+class PersonLogOrder:
+    date: auto
+
 @strawberry.django.filters.filter(models.PersonLog, lookups=True)
 class PersonLogFilter:
     id: auto
 
-@strawberry.django.type(models.PersonLog, filters=PersonLogFilter)
+@strawberry.django.type(models.PersonLog, filters=PersonLogFilter, order=PersonLogOrder, pagination=True)
 class PersonLog:
     id: auto
     date: auto
