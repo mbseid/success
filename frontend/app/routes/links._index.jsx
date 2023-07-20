@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import useDebounce from '~/utils/debounce';
 import { Link as RouterLink, useLoaderData, useFetcher } from '@remix-run/react';
 import { json } from '@remix-run/node';
 // material
@@ -36,19 +37,20 @@ export const meta = () => {
 export default function Links(){
   const { links } = useLoaderData();
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
 
   const linkSearch = useFetcher();
 
   const searchLinks = (query) => {
     setSearchQuery(query);
-    linkSearch.submit({ query }, {
+    debouncedRequest()
+  }
+
+  const debouncedRequest = useDebounce(() => {
+    linkSearch.submit({ query: searchQuery }, {
       method: "get",
       action: `/links/search`,
     });
-  }
-
-
+  }, 500);
   
   return (
     <Page title="Links">

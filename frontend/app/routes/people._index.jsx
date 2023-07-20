@@ -1,8 +1,11 @@
 import { Link as RouterLink, useLoaderData } from '@remix-run/react';
 import { json } from '@remix-run/node';
 
-import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat)
+
 import { useState } from 'react';
 // material
 import {
@@ -153,9 +156,7 @@ export default function People() {
                 />
               <TableBody>
                 {people.map((person) => {
-                  const { id, name, team, role } = person;
-
-                  const chatDates = person.logs.map(l => l.date).sort((a, b) => b - a);
+                  const { id, name, team, role, logs } = person;
 
                   return (
                     <TableRow
@@ -168,7 +169,7 @@ export default function People() {
                       </TableCell>
                       <TableCell align="left">{team}</TableCell>
                       <TableCell align="left">{role}</TableCell>
-                      <TableCell align="left">{}</TableCell>
+                      <TableCell align="left">{logs[0] && dayjs(logs[0].date, "YYYY-MM-DD").format("MMMM DD, YYYY")}</TableCell>
                       <TableCell align="right">
                       </TableCell>
                     </TableRow>

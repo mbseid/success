@@ -1,6 +1,6 @@
-django
+django==4.2.3
 django-extensions
-strawberry-graphql-django
+strawberry-graphql-django==0.14.0
 psycopg2
 pyyaml
 gunicorn
