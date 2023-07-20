@@ -1,4 +1,5 @@
-import { Link as RouterLink, useLoaderData } from '@remix-run/react';
+import { Link as RouterLink, useLoaderData, useFetcher } from '@remix-run/react';
+import useDebounce from '~/utils/debounce';
 import { json } from '@remix-run/node';
 
 import dayjs from 'dayjs';
@@ -95,7 +96,7 @@ query GetPeople {
         name
         team
         role
-        logs {
+        logs(pagination: { offset: 0, limit: 1 }, order: { date: DESC }){
             id
             note
             date
@@ -121,13 +122,29 @@ export default function People() {
   const [orderBy, setOrderBy] = useState('name');
   const [order, setOrder] = useState('asc');
 
-  const [searchQuery, setFilterName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
+
+  const peopleSearch = useFetcher();
+
+  const updateSearchQuery = (query) => {
+    setSearchQuery(query);
+    debouncedRequest()
+  }
+
+  const debouncedRequest = useDebounce(() => {
+    peopleSearch.submit({ query: searchQuery, type: "person" }, {
+      method: "get",
+      action: `/search`,
+    });
+  }, 500);
+
+  const peopleList = (searchQuery && peopleSearch.state === "idle" && peopleSearch.data) ? peopleSearch.data.search : people;
 
   return (
     <Page title="People">
@@ -141,7 +158,7 @@ export default function People() {
           </Button>
         </Stack>
         <Stack mb={5} direction="row" alignItems="center" justifyContent="space-between">
-          <SearchBar placeholder="Search people..." setSearchQuery={setFilterName}/>
+          <SearchBar placeholder="Search people..." setSearchQuery={updateSearchQuery}/>
           {/* <LinksSort options={[]} /> */}
         </Stack>
 
@@ -155,7 +172,7 @@ export default function People() {
                   onRequestSort={handleRequestSort}
                 />
               <TableBody>
-                {people.map((person) => {
+                {peopleList.map((person) => {
                   const { id, name, team, role, logs } = person;
 
                   return (
