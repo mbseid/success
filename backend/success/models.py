@@ -2,11 +2,11 @@ from typing import List
 import uuid
 
 from django.db import models, connection, transaction
-from django.db.models import Count, F, Func
+from django.db.models import Count, F, Func, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.postgres.search import SearchVectorField, SearchVector
+from django.contrib.postgres.search import SearchVectorField, SearchVector, SearchQuery
 
 from collections import defaultdict
 
@@ -59,11 +59,13 @@ class Project(SuccessModel):
 
 class SearchIndexManager(models.Manager):
     def search(self, query, item_type = None):
-        objects = SearchIndex.objects.annotate(search=SearchVector('body', config='english')).filter(search=query)
+        objects = SearchIndex.objects.filter(Q(body_vector=SearchQuery(query, search_type='websearch')) | Q(body__icontains=query))
         if item_type:
             objects = objects.filter(item_type=item_type)
-
         # Sort objects into type to query
+
+        print(objects.explain())
+        
         grouped_objects = defaultdict(list)
         for obj in objects:
             grouped_objects[obj.item_type].append(obj)
@@ -85,7 +87,8 @@ class SearchIndexManager(models.Manager):
 class SearchIndex(models.Model):
     item_type = models.CharField(max_length=200)
     item_id = models.UUIDField(primary_key=True) 
-    body = SearchVectorField()
+    body = models.TextField()
+    body_vector = SearchVectorField()
 
     objects = SearchIndexManager()
     
