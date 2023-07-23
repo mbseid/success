@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 // @mui
 import { InputAdornment, TextField } from '@mui/material';
 // components
-import Iconify from '~//components/Iconify';
+import SearchIcon from '@mui/icons-material/Search';
 
 
 export default function SearchBar({ placeholder, setSearchQuery }) {
@@ -17,7 +17,7 @@ export default function SearchBar({ placeholder, setSearchQuery }) {
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
-            <Iconify icon={'eva:search-fill'} sx={{ ml: 1, width: 20, height: 20, color: 'text.disabled' }} />
+            <SearchIcon sx={{ ml: 1, width: 20, height: 20, color: 'text.disabled' }} />
           </InputAdornment>
         )
       }}

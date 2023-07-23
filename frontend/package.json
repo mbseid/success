@@ -13,6 +13,7 @@
     "@emotion/server": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@iconify/react": "^3.2.2",
+    "@mui/icons-material": "^5.14.1",
     "@mui/lab": "^5.0.0-alpha.93",
     "@mui/material": "^5.14.1",
     "@mui/x-date-pickers": "^5.0.0-beta.3",

@@ -10,7 +10,10 @@ import { Grid, Container, Typography, Card, List, ListItem, ListItemText, ListIt
 // components
 import Page from '~/components/Page';
 import AppWidgetSummary from '~/dashboard/AppWidgetSummary';
-import Iconify from '~/components/Iconify';
+
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import LinkIcon from '@mui/icons-material/Link';
+import PersonIcon from '@mui/icons-material/Person';
 
 import { colorCode as projectColorCode } from '~/utils/colors';
 
@@ -59,11 +62,20 @@ export default function Index(linkCount = 0, peopleCount = 0, projects = []) {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Link Count" total={count.link} icon={'ant-design:link-outlined'} onClick={() => navigate('/links')}/>
+            <AppWidgetSummary
+              title="Link Count"
+              total={count.link}
+              icon={<LinkIcon />}
+              onClick={() => navigate('/links')} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="People" total={count.people} color="info" icon={'ant-design:user-outlined'} onClick={() => navigate('/people')}/>
+            <AppWidgetSummary
+              title="People"
+              total={count.people}
+              color="info"
+              icon={<PersonIcon />}
+              onClick={() => navigate('/people')}/>
           </Grid>
           <Grid item xs={12} sm={6} md={6}>
             <Card sx={{
@@ -75,7 +87,7 @@ export default function Index(linkCount = 0, peopleCount = 0, projects = []) {
                               py: 1,
                               textAlign: 'center'
                             }}>
-                  <Iconify icon={'mdi:engine'} /> Projects
+                  <AccountTreeIcon /> Projects
                 </Typography>
               </UnstyledLink>
               <List>

@@ -27,7 +27,7 @@ import {
 } from '@mui/material';
 // components
 import Page from '~/components/Page';
-import Iconify from '~/components/Iconify';
+import AddIcon from '@mui/icons-material/Add';
 import SearchNotFound from '~/components/SearchNotFound';
 import SearchBar from '~/components/SearchBar';
 import { graphQLClient, gql } from '~/graphql';
@@ -153,7 +153,7 @@ export default function People() {
           <Typography variant="h4" gutterBottom>
             People
           </Typography>
-          <Button variant="contained" component={RouterLink} to="/people/new" startIcon={<Iconify icon="eva:plus-fill" />}>
+          <Button variant="contained" component={RouterLink} to="/people/new" startIcon={<AddIcon />}>
             New Person
           </Button>
         </Stack>

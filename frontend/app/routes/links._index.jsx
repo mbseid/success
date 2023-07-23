@@ -6,9 +6,9 @@ import { json } from '@remix-run/node';
 import { Grid, Button, Container, Stack, Typography } from '@mui/material';
 // components
 import Page from '~/components/Page';
-import Iconify from '~/components/Iconify';
 import { LinkCard, LinksSort } from '~/components/link';
 import SearchBar from '~/components/SearchBar';
+import AddIcon from '@mui/icons-material/Add';
 
 import { graphQLClient, gql } from '~/graphql';
 
@@ -59,7 +59,7 @@ export default function Links(){
           <Typography variant="h4" gutterBottom>
             Links
           </Typography>
-          <Button variant="contained" component={RouterLink} to="/links/new" startIcon={<Iconify icon="eva:plus-fill" />}>
+          <Button variant="contained" component={RouterLink} to="/links/new" startIcon={<AddIcon />}>
             New Link
           </Button>
         </Stack>

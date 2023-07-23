@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener, Stack, Paper } from '@mui/material';
 // component
-import Iconify from '../../components/Iconify';
+import SearchIcon from '@mui/icons-material/Search';
 
 // ----------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ export default function Searchbar() {
       <div>
         {!isOpen && (
           <IconButton onClick={handleOpen}>
-            <Iconify icon="eva:search-fill" width={20} height={20} />
+            <SearchIcon width={20} height={20} />
           </IconButton>
         )}
 
@@ -66,7 +66,7 @@ export default function Searchbar() {
               placeholder="Search…"
               startAdornment={
                 <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
+                  <SearchIcon sx={{ color: 'text.disabled', width: 20, height: 20 }} />
                 </InputAdornment>
               }
               sx={{ mr: 1, fontWeight: 'fontWeightBold' }}

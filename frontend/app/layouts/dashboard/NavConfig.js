@@ -1,7 +1,9 @@
 import React from 'react';
 
 // component
-import Iconify from '../../components/Iconify';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import PersonIcon from '@mui/icons-material/Person';
+import LinkIcon from '@mui/icons-material/Link';
 
 // ----------------------------------------------------------------------
 
@@ -11,25 +13,19 @@ const navConfig = [
   {
     title: 'Dashboard',
     path: '/',
-    icon: getIcon('eva:pie-chart-2-fill'),
+    icon: <DashboardIcon />,
     endMatch: true
-  },
-  {
-    title: 'Projects',
-    path: '/projects',
-    icon: getIcon('mdi:engine'),
-    endMatch: false
   },
   {
     title: 'People',
     path: '/people',
-    icon: getIcon('eva:people-fill'),
+    icon: <PersonIcon />,
     endMatch: false
   },
   {
     title: 'Links',
     path: '/links',
-    icon: getIcon('eva:file-text-fill'),
+    icon: <LinkIcon />,
     endMatch: false
   },
 ];
