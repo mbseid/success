@@ -16,38 +16,14 @@ import { unstable_useEnhancedEffect as useEnhancedEffect } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-import {theme, clientStyleContext} from '~/theme';
+import { clientStyleContext} from '~/theme';
 
-import DashboardLayout from "~/layouts/dashboard/index"
+import DashboardLayout from "~/layouts/dashboard"
 
 
 export const links = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
-
-// TODO: https://github.com/mui/material-ui/tree/master/examples/material-remix-ts/app
-// export default function App() {
-//   return (
-//     <LocalizationProvider dateAdapter={AdapterDateFns} >
-//       <ThemeProvider>
-//         <html lang="en">
-//           <head>
-//             <meta charSet="utf-8" />
-//             <meta name="viewport" content="width=device-width,initial-scale=1" />
-//             <Meta />
-//             <Links />
-//           </head>
-//           <body>
-//             <Outlet />
-//             <ScrollRestoration />
-//             <Scripts />
-//             <LiveReload />
-//           </body>
-//         </html>
-//       </ThemeProvider>
-//     </LocalizationProvider>
-//   );
-// }
 
 const Document = withEmotionCache(({ children, title }, emotionCache) => {
   const clientStyleData = React.useContext(clientStyleContext);
@@ -73,7 +49,6 @@ const Document = withEmotionCache(({ children, title }, emotionCache) => {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <meta name="theme-color" content={theme.palette.primary.main} />
         {title ? <title>{title}</title> : null}
         <Meta />
         <Links />

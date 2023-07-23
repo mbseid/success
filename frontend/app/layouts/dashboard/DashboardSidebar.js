@@ -6,8 +6,6 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 // material
 import { styled } from '@mui/material/styles';
 import { Box, Link, Button, Drawer, Typography, Avatar, Stack } from '@mui/material';
-// hooks
-import useResponsive from '../../hooks/useResponsive';
 // components
 import Logo from '../../components/Logo';
 import Scrollbar from '../../components/Scrollbar';
@@ -43,8 +41,6 @@ DashboardSidebar.propTypes = {
 
 export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
   const { pathname } = useLocation();
-
-  const isDesktop = useResponsive('up', 'lg');
 
   useEffect(() => {
     if (isOpenSidebar) {
@@ -89,7 +85,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
 
   return (
     <RootStyle>
-      {!isDesktop && (
+      <Box sx={{ display: { lg: "none" } }}>
         <Drawer
           open={isOpenSidebar}
           onClose={onCloseSidebar}
@@ -99,9 +95,9 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
         >
           {renderContent}
         </Drawer>
-      )}
+      </Box>
 
-      {isDesktop && (
+      <Box sx={{ display: {xs: "none", lg: "block" } }}>
         <Drawer
           open
           variant="persistent"
@@ -115,7 +111,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
         >
           {renderContent}
         </Drawer>
-      )}
+      </Box>
     </RootStyle>
   );
 }

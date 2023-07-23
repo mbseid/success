@@ -13,7 +13,7 @@ import { hydrateRoot } from "react-dom/client";
 import { CacheProvider } from '@emotion/react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import {createEmotionCache, clientStyleContext, theme} from '~/theme';
+import {createEmotionCache, clientStyleContext, createSuccessTheme} from '~/theme';
 
 function ClientCacheProvider({ children }) {
   const [cache, setCache] = React.useState(createEmotionCache());
@@ -33,6 +33,7 @@ function ClientCacheProvider({ children }) {
     </clientStyleContext.Provider>
   );
 }
+const theme = createSuccessTheme();
 
 const hydrate = () => {
   React.startTransition(() => {

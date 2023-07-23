@@ -11,6 +11,8 @@ import typography from './typography';
 import componentsOverride from './overrides';
 import shadows, { customShadows } from './shadows';
 
+import merge from 'lodash.merge';
+
 export function createEmotionCache() {
   return createCache({ key: 'css' });
 }
@@ -19,27 +21,17 @@ export const clientStyleContext = createContext({
   reset: () => {},
 });
 
-export function createTheTheme() {
+export function createSuccessTheme(deviceType = 'desktop', extensions = {}) {
+  
   const theme = createTheme({
     palette,
     shape: { borderRadius: 8 },
     typography,
     shadows,
-    customShadows,
+    customShadows
   });
   theme.components = componentsOverride(theme);
+  const merged = merge(theme, extensions);
 
-  return theme;
+  return merged;
 }
-
-export const theme = createTheTheme();
-
-//   return (
-//     <StyledEngineProvider injectFirst>
-//       <MUIThemeProvider theme={theme}>
-//         <CssBaseline />
-//         {children}
-//       </MUIThemeProvider>
-//     </StyledEngineProvider>
-//   );
-// }

@@ -9,13 +9,16 @@ import * as ReactDOMServer from 'react-dom/server';
 import { Response } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 
-import { theme, createEmotionCache } from '~/theme';
+import { createSuccessTheme, createEmotionCache } from '~/theme';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { CacheProvider } from '@emotion/react';
 import createEmotionServer from '@emotion/server/create-instance';
 
-const ABORT_DELAY = 5_000;
+import parser from 'ua-parser-js';
+import mediaQuery from 'css-mediaquery';
+
+
 
 export default function handleRequest(
   request,
@@ -26,6 +29,25 @@ export default function handleRequest(
   const cache = createEmotionCache();
   const { extractCriticalToChunks } = createEmotionServer(cache);
 
+  const deviceType = parser(request.headers.get('user-agent')).device.type || 'desktop';
+  const ssrMatchMedia = (query) => ({
+    matches: mediaQuery.match(query, {
+      // The estimated CSS width of the browser.
+      width: deviceType == 'desktop' ? '1024px' : '300px'
+    }),
+  });
+
+  const theme = createSuccessTheme(deviceType, {
+    components: {
+      // Change the default options of useMediaQuery
+      MuiUseMediaQuery: {
+        defaultProps: {
+          ssrMatchMedia,
+        },
+      },
+    }
+  })
+  
   function MuiRemixServer() {
     return (
       <CacheProvider value={cache}>
@@ -65,105 +87,3 @@ export default function handleRequest(
     headers: responseHeaders,
   });
 }
-
-
-//   return isbot(request.headers.get("user-agent"))
-//     ? handleBotRequest(
-//         request,
-//         responseStatusCode,
-//         responseHeaders,
-//         remixContext
-//       )
-//     : handleBrowserRequest(
-//         request,
-//         responseStatusCode,
-//         responseHeaders,
-//         remixContext
-//       );
-// }
-
-// function handleBotRequest(
-//   request,
-//   responseStatusCode,
-//   responseHeaders,
-//   remixContext
-// ) {
-//   return new Promise((resolve, reject) => {
-//     const { pipe, abort } = renderToPipeableStream(
-//       <RemixServer
-//         context={remixContext}
-//         url={request.url}
-//         abortDelay={ABORT_DELAY}
-//       />,
-
-//       {
-//         onAllReady() {
-//           const body = new PassThrough();
-
-//           responseHeaders.set("Content-Type", "text/html");
-
-//           resolve(
-//             new Response(body, {
-//               headers: responseHeaders,
-//               status: responseStatusCode,
-//             })
-//           );
-
-//           pipe(body);
-//         },
-//         onShellError(error) {
-//           reject(error);
-//         },
-//         onError(error) {
-//           responseStatusCode = 500;
-//           console.error(error);
-//         },
-//       }
-//     );
-
-//     setTimeout(abort, ABORT_DELAY);
-//   });
-// }
-
-// function handleBrowserRequest(
-//   request,
-//   responseStatusCode,
-//   responseHeaders,
-//   remixContext
-// ) {
-//   return new Promise((resolve, reject) => {
-//     const { pipe, abort } = renderToPipeableStream(
-//       <RemixServer
-//         context={remixContext}
-//         url={request.url}
-//         abortDelay={ABORT_DELAY}
-//       />,
-
-//       {
-//         onShellReady() {
-//           const body = new PassThrough();
-
-//           responseHeaders.set("Content-Type", "text/html");
-
-//           resolve(
-//             new Response(body, {
-//               headers: responseHeaders,
-//               status: responseStatusCode,
-//             })
-//           );
-
-//           pipe(body);
-//         },
-//         onShellError(error) {
-//           reject(error);
-//         },
-//         onError(error) {
-//           console.error(error);
-//           responseStatusCode = 500;
-//         },
-//       }
-//     );
-
-//     setTimeout(abort, ABORT_DELAY);
-//   });
-// }
