@@ -1,6 +1,7 @@
 django==4.2.3
 django-extensions
 strawberry-graphql-django==0.14.0
+django-ordered-model
 psycopg2
 pyyaml
 gunicorn

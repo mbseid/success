@@ -18,12 +18,19 @@ import PersonIcon from '@mui/icons-material/Person';
 import { colorCode as projectColorCode } from '~/utils/colors';
 
 import { graphQLClient, gql } from '~/graphql';
+import ProjectList from "~/components/ProjectList";
 
 const query = gql`
   query GetCounts {
     count {
       people
       link
+    }
+    projects(order: { order: DESC }) {
+      id
+      name
+      due
+      order
     }
   }
 `;
@@ -47,10 +54,9 @@ export const meta = () => {
   ];
 };
 
-export default function Index(linkCount = 0, peopleCount = 0, projects = []) {
-  const { count } = useLoaderData();
+export default function Index() {
+  const { count, projects } = useLoaderData();
 
-  projects = []
   const navigate = useNavigate();
 
   return (
@@ -91,21 +97,7 @@ export default function Index(linkCount = 0, peopleCount = 0, projects = []) {
                 </Typography>
               </UnstyledLink>
               <List>
-                {projects.map((project) => (
-                  <ListItem key={project._id}
-                            sx={{
-                              backgroundColor: projectColorCode(project)
-                            }}>
-                    <UnstyledLink to={`/projects/${project._id}`}>
-                      <ListItemText
-                        primary={project.name}
-                        secondary={project.due.toDateString()} />
-                      <ListItemSecondaryAction>
-                          <Iconify icon={'mdi:arrow-right-circle-outline'} />
-                      </ListItemSecondaryAction>
-                    </UnstyledLink>
-                  </ListItem>
-                ))}
+                <ProjectList projects={projects} />
               </List>
             </Card>
           </Grid>

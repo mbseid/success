@@ -4,8 +4,9 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List, Union, Optional
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput
 from . import models
+import uuid
 
 @strawberry.type
 class Query:
@@ -14,6 +15,9 @@ class Query:
     
     person: Person = strawberry_django.field()
     people: List[Person] = strawberry.django.field()
+
+    project: Project = strawberry_django.field()
+    projects: List[Project] = strawberry_django.field()
     
     @strawberry_django.field
     def tags(self) -> List[str]:
@@ -49,6 +53,14 @@ class Mutation:
 
     createPersonLog: PersonLog = mutations.create(PersonLogInput)
     updatePersonLog: List[PersonLog] = mutations.update(PersonLogInput)
+
+    createProject: Project = mutations.create(ProjectInput)
+
+    @strawberry_django.mutation
+    def reorder_project(self, projectID: uuid.UUID, order: int) -> Project:
+        project = models.Project.objects.get(pk=projectID)
+        project.to(order)
+        return project
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

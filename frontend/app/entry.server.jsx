@@ -18,7 +18,7 @@ import createEmotionServer from '@emotion/server/create-instance';
 import parser from 'ua-parser-js';
 import mediaQuery from 'css-mediaquery';
 
-
+import { resetServerContext } from 'react-beautiful-dnd';
 
 export default function handleRequest(
   request,
@@ -60,6 +60,8 @@ export default function handleRequest(
     );
   }
 
+  resetServerContext();
+  
   // Render the component to a string.
   const html = ReactDOMServer.renderToString(<MuiRemixServer />);
 

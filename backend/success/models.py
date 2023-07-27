@@ -7,6 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVectorField, SearchVector, SearchQuery
+from ordered_model.models import OrderedModel
 
 from collections import defaultdict
 
@@ -50,12 +51,15 @@ class PersonLog(SuccessModel):
         on_delete=models.CASCADE
     )
 
-class Project(SuccessModel):
+class Project(SuccessModel, OrderedModel):
     name = models.CharField()
-    description = models.CharField()
+    description = models.CharField(blank=True)
     due = models.DateField()
     complete = models.BooleanField(default=False)
-    notes = models.TextField()
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['order']
 
 class SearchIndexManager(models.Manager):
     def search(self, query, item_type = None):
@@ -63,8 +67,6 @@ class SearchIndexManager(models.Manager):
         if item_type:
             objects = objects.filter(item_type=item_type)
         # Sort objects into type to query
-
-        print(objects.explain())
         
         grouped_objects = defaultdict(list)
         for obj in objects:

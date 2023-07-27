@@ -64,3 +64,24 @@ class PersonLogInput:
     date: auto
     note: auto
     person: auto
+
+@strawberry.django.input(models.Project)
+class ProjectInput:
+    name: auto
+    description: auto
+    due: auto
+
+@strawberry.django.order(models.Person)
+class ProjectOrder:
+    order: auto
+    date: auto
+
+@strawberry.django.type(models.Project, order=ProjectOrder)
+class Project:
+    id: auto
+    name: auto
+    description: auto
+    due: auto
+    complete: auto
+    notes: auto
+    order: auto
