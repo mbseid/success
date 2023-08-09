@@ -6,6 +6,7 @@ from strawberry_django import mutations
 from typing import List, Union, Optional
 from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput
 from . import models
+from . import assistant
 import uuid
 
 @strawberry.type
@@ -61,6 +62,11 @@ class Mutation:
         project = models.Project.objects.get(pk=projectID)
         project.to(order)
         return project
+
+    @strawberry_django.mutation
+    def assistant(self, promptID: uuid.UUID, request: str) -> str:
+        prompt = models.PromptTemplate.objects.get(pk=promptID)
+        return assistant.predict(prompt, request)
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

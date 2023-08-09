@@ -98,6 +98,11 @@ class SearchIndex(models.Model):
         managed = False
         db_table = 'success_search_index'
 
+class PromptTemplate(SuccessModel):
+    name = models.CharField()
+    system_message = models.TextField()
+    request_template = models.TextField()
+
 @receiver(post_save, sender=Link)
 @receiver(post_save, sender=Person)
 @receiver(post_save, sender=Project)

@@ -4,4 +4,6 @@ strawberry-graphql-django==0.14.0
 django-ordered-model
 psycopg2
 pyyaml
+langchain
+openai
 gunicorn
