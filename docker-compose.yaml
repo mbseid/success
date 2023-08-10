@@ -45,7 +45,6 @@ services:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - OPENAI_API_KEY=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
     restart: always
     depends_on:
       db:
