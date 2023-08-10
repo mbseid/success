@@ -67,22 +67,6 @@ export default function Index() {
         </Typography>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary
-              title="Link Count"
-              total={count.link}
-              icon={<LinkIcon />}
-              onClick={() => navigate('/links')} />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary
-              title="People"
-              total={count.people}
-              color="info"
-              icon={<PersonIcon />}
-              onClick={() => navigate('/people')}/>
-          </Grid>
           <Grid item xs={12} sm={6} md={6}>
             <Card sx={{
               height: '100%'
@@ -101,6 +85,23 @@ export default function Index() {
               </List>
             </Card>
           </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummary
+              title="Link Count"
+              total={count.link}
+              icon={<LinkIcon />}
+              onClick={() => navigate('/links')} />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummary
+              title="People"
+              total={count.people}
+              color="info"
+              icon={<PersonIcon />}
+              onClick={() => navigate('/people')}/>
+          </Grid>
+         
           {/*
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary title="Item Orders" total={1723315} color="warning" icon={'ant-design:windows-filled'} />

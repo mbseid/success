@@ -3,6 +3,7 @@ version: '3.9'
 services:
   frontend:
     image: "ghcr.io/mbseid/success-frontend:main"
+    restart: always
     ports:
       - "3000:3000"
     environment:
@@ -11,18 +12,19 @@ services:
       - backend
   backend:
     image: "ghcr.io/mbseid/success-backend:main"
+    restart: always
     environment:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - SECRET_KEY=changeme
       - DJANGO_ALLOWED_HOSTS=backend
-    restart: always
     depends_on:
       db:
         condition: service_healthy
   db:
     image: postgres
+    restart: always
     ports:
       - "5432:5432"
     volumes:
