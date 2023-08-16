@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { ListItem, ListItemText, List, Button, Grid } from "@mui/material";
+import { ListItem, ListItemText, List, Button, Grid, Typography } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import TextField from '@mui/material/TextField';
 import { useFetcher, Link } from '@remix-run/react';
-import AddIcon from '@mui/icons-material/Add'
+import AddIcon from '@mui/icons-material/Add';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+
 
 const getItemStyle = (isDragging, draggableStyle) => ({
     // some basic styles to make the items look a bit nicer
@@ -71,7 +73,16 @@ export default function ProjectList({ projects }) {
                 value={quickCreateProjectName}
                 onChange={(e) => setCreateProjectName(e.target.value)}
                 /> */}
-            <Grid container padding={2} justifyContent="flex-end" >
+            <Grid container padding={2} justifyContent="space-between">
+                <Grid item>
+                <Typography variant="h5" gutterBottom
+                            sx={{
+                              py: 1,
+                              textAlign: 'center'
+                            }}>
+                  <AccountTreeIcon /> Projects
+                </Typography>
+                </Grid>
                 <Grid item xs={4}>
                     <Button to={`/projects/new`}
                             component={Link}

@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVectorField, SearchVector, SearchQuery
 from ordered_model.models import OrderedModel
+import logging
 
 from collections import defaultdict
 
@@ -103,9 +104,12 @@ class PromptTemplate(SuccessModel):
     system_message = models.TextField()
     request_template = models.TextField()
 
+logger = logging.getLogger(__name__)
+
 @receiver(post_save, sender=Link)
 @receiver(post_save, sender=Person)
 @receiver(post_save, sender=Project)
 def update_view(sender, **kwargs):
     with connection.cursor() as cursor:
         cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY success_search_index;")
+    logger.info("Reindexed the database.")

@@ -6,12 +6,11 @@ import {
 import { json } from '@remix-run/node';
 
 // @mui
-import { Grid, Container, Typography, Card, List, ListItem, ListItemText, ListItemSecondaryAction, CardActionArea, styled } from '@mui/material';
+import { Grid, Container, Typography, Card, styled } from '@mui/material';
 // components
 import Page from '~/components/Page';
 import AppWidgetSummary from '~/dashboard/AppWidgetSummary';
 
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import LinkIcon from '@mui/icons-material/Link';
 import PersonIcon from '@mui/icons-material/Person';
 
@@ -71,18 +70,7 @@ export default function Index() {
             <Card sx={{
               height: '100%'
             }}>
-              <UnstyledLink to="/projects">
-                <Typography variant="h5" gutterBottom
-                            sx={{
-                              py: 1,
-                              textAlign: 'center'
-                            }}>
-                  <AccountTreeIcon /> Projects
-                </Typography>
-              </UnstyledLink>
-              <List>
-                <ProjectList projects={projects} />
-              </List>
+              <ProjectList projects={projects} />
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
