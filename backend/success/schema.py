@@ -4,7 +4,7 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List, Union, Optional
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer
 from . import models
 from . import assistant
 import uuid
@@ -19,6 +19,9 @@ class Query:
 
     project: Project = strawberry_django.field()
     projects: List[Project] = strawberry_django.field()
+
+    assistantAnswer: AssistantAnswer = strawberry_django.field()
+    assistantAnswers: List[AssistantAnswer] = strawberry_django.field()
     
     @strawberry_django.field
     def tags(self) -> List[str]:
@@ -64,9 +67,11 @@ class Mutation:
         return project
 
     @strawberry_django.mutation
-    def assistant(self, promptID: uuid.UUID, request: str) -> str:
-        prompt = models.PromptTemplate.objects.get(pk=promptID)
-        return assistant.predict(prompt, request)
+    def assistant(self, system: str, request: str, promptID: Optional[uuid.UUID] = None) -> AssistantAnswer:
+        if promptID:
+            prompt = models.PromptTemplate.objects.get(pk=promptID)
+            system = prompt.system_message
+        return assistant.predict(system, request)
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

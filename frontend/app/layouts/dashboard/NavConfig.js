@@ -4,6 +4,7 @@ import React from 'react';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
 import LinkIcon from '@mui/icons-material/Link';
+import AssistantIcon from '@mui/icons-material/Assistant';
 
 // ----------------------------------------------------------------------
 
@@ -26,6 +27,12 @@ const navConfig = [
     title: 'Links',
     path: '/links',
     icon: <LinkIcon />,
+    endMatch: false
+  },
+  {
+    title: 'Assistant',
+    path: '/assistant',
+    icon: <AssistantIcon />,
     endMatch: false
   },
 ];

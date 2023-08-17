@@ -85,3 +85,10 @@ class Project:
     complete: auto
     notes: auto
     order: auto
+
+@strawberry.django.type(models.AssistantAnswer)
+class AssistantAnswer:
+    id: auto
+    system: auto
+    request: auto
+    response: auto

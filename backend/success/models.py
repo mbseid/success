@@ -104,6 +104,11 @@ class PromptTemplate(SuccessModel):
     system_message = models.TextField()
     request_template = models.TextField()
 
+class AssistantAnswer(SuccessModel):
+    system = models.TextField()
+    request = models.TextField()
+    response = models.TextField()
+
 logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Link)
