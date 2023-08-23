@@ -19,6 +19,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - SECRET_KEY=changeme
       - DJANGO_ALLOWED_HOSTS=backend
+      - OPENAI_API_KEY=changeme
     depends_on:
       db:
         condition: service_healthy

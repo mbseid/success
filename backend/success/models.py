@@ -108,6 +108,7 @@ class AssistantAnswer(SuccessModel):
     system = models.TextField()
     request = models.TextField()
     response = models.TextField()
+    datetime = models.DateTimeField(auto_now_add=True)
 
 logger = logging.getLogger(__name__)
 

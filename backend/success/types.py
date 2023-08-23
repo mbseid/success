@@ -92,3 +92,4 @@ class AssistantAnswer:
     system: auto
     request: auto
     response: auto
+    datetime: auto

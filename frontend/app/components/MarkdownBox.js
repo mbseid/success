@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { Box } from '@mui/material';
 
 export default styled(Box)({
-    '& ul': {
+    '& ul, ol': {
         padding: 'revert'
     },
     '& li': {

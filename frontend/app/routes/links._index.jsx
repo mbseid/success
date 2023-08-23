@@ -50,7 +50,7 @@ export default function Links(){
       method: "get",
       action: `/links/search`,
     });
-  }, 500);
+  }, 900);
   
   return (
     <Page title="Links">

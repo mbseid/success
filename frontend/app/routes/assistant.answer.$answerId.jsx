@@ -1,23 +1,26 @@
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link } from "@remix-run/react";
+import { NoSsr } from '@mui/base';
+import dayjs from 'dayjs';
+import { useTheme } from '@mui/material/styles';
 
 
 import Page from '~/components/Page';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Avatar from '@mui/material/Avatar';
-import Fab from '@mui/material/Fab';
-import SendIcon from '@mui/icons-material/Send';
-import { useState } from 'react';
+import ListItemButton from '@mui/material/ListItemButton';
+import Button from '@mui/material/Button';
 import { gql, graphQLClient } from '~/graphql';
+import { Stack } from "@mui/material";
+import { markDownToHtml } from '~/utils/markdown';
+import MarkdownBox from '~/components/MarkdownBox';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+
 
 const AssistantAnswerQuery = gql`
 query GetAnswer($answerId: ID!){
@@ -27,6 +30,11 @@ query GetAnswer($answerId: ID!){
         request
         response
     }
+    assistantAnswers{
+        id
+        request
+        datetime
+    }
 }
 `
 
@@ -34,103 +42,100 @@ export async function loader({request, params}){
     const { data } = await graphQLClient.query({
         query: AssistantAnswerQuery,
         variables: {
-          answerId: params.responseId
+          answerId: params.answerId
         }
     });
 
+    data.assistantAnswer.responseMarkdown = markDownToHtml(data.assistantAnswer.response)
     return json(data);
 }
 
-export default function AssistantAnswer(){
-    const wtf = useLoaderData();
+function ChatRow({text, role, rawText}){
+    const theme = useTheme();
 
+    let align = 'left',
+        background = theme.palette.grey[100];
+
+    
+    if(role == "user"){
+        align = 'right';
+        background = 'inherit';
+    }
+
+    const copy = async () => {
+        await navigator.clipboard.writeText(rawText);
+    }
+    return (
+        <ListItem sx={{textAlign: align, backgroundColor: background}}>
+            <Grid container>
+                <Grid item xs={12} justifyContent="flex-end">
+                    <Button variant="outlined"
+                            startIcon={<ContentCopyIcon />}
+                            onClick={copy}
+                            size='small'>
+                        Copy
+                    </Button>
+                </Grid>
+            
+                <Grid item xs={12}>
+                    <MarkdownBox dangerouslySetInnerHTML={{__html: text}} />
+                </Grid>
+            </Grid>
+        </ListItem>
+    )
+}
+export default function AssistantAnswer(){
+    const { assistantAnswer, assistantAnswers } = useLoaderData();
 
     return (
         <Page title="Assistant Response">
             <Grid container>
                 <Grid item xs={12} >
-                    <Typography variant="h5" className="header-message">Chat</Typography>
+                    <Typography variant="h5" className="header-message">Assistant Answers</Typography>
                 </Grid>
             </Grid>
             <Grid container component={Paper}>
-                <Grid item xs={3}>
-                    <List>
-                        <ListItem button key="RemySharp">
-                            <ListItemIcon>
-                            <Avatar alt="Remy Sharp" src="https://material-ui.com/static/images/avatar/1.jpg" />
-                            </ListItemIcon>
-                            <ListItemText primary="John Wick"></ListItemText>
-                        </ListItem>
-                    </List>
-                    <Divider />
+                <Grid item xs={3} style={{borderRight: "1px solid lightgrey"}}>
                     <Grid item xs={12} style={{padding: '10px'}}>
                         <TextField id="outlined-basic-email" label="Search" variant="outlined" fullWidth />
                     </Grid>
                     <Divider />
                     <List>
-                        <ListItem button key="RemySharp">
-                            <ListItemIcon>
-                                <Avatar alt="Remy Sharp" src="https://material-ui.com/static/images/avatar/1.jpg" />
-                            </ListItemIcon>
-                            <ListItemText primary="Remy Sharp">Remy Sharp</ListItemText>
-                            <ListItemText secondary="online" align="right"></ListItemText>
-                        </ListItem>
-                        <ListItem button key="Alice">
-                            <ListItemIcon>
-                                <Avatar alt="Alice" src="https://material-ui.com/static/images/avatar/3.jpg" />
-                            </ListItemIcon>
-                            <ListItemText primary="Alice">Alice</ListItemText>
-                        </ListItem>
-                        <ListItem button key="CindyBaker">
-                            <ListItemIcon>
-                                <Avatar alt="Cindy Baker" src="https://material-ui.com/static/images/avatar/2.jpg" />
-                            </ListItemIcon>
-                            <ListItemText primary="Cindy Baker">Cindy Baker</ListItemText>
-                        </ListItem>
+                        {assistantAnswers.reverse().map(({id, request, datetime}) => {
+                            return (
+                                <ListItemButton key={id}
+                                                divider={true}
+                                                component={Link}
+                                                to={`/assistant/answer/${id}`}>
+                                    <Stack>
+                                        <Typography variant="body2" gutterBottom>
+                                            {request.slice(0, 10)}
+                                        </Typography>
+                                        <NoSsr>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {dayjs(datetime).format("MM/DD/YYYY")}
+                                            </Typography>
+                                        </NoSsr>
+                                    </Stack>
+                                </ListItemButton>
+                            );
+                        })}
                     </List>
                 </Grid>
                 <Grid item xs={9}>
                     <List>
-                        <ListItem key="1">
-                            <Grid container>
-                                <Grid item xs={12}>
-                                    <ListItemText align="right" primary="Hey man, What's up ?"></ListItemText>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <ListItemText align="right" secondary="09:30"></ListItemText>
-                                </Grid>
-                            </Grid>
-                        </ListItem>
-                        <ListItem key="2">
-                            <Grid container>
-                                <Grid item xs={12}>
-                                    <ListItemText align="left" primary="Hey, Iam Good! What about you ?"></ListItemText>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <ListItemText align="left" secondary="09:31"></ListItemText>
-                                </Grid>
-                            </Grid>
-                        </ListItem>
-                        <ListItem key="3">
-                            <Grid container>
-                                <Grid item xs={12}>
-                                    <ListItemText align="right" primary="Cool. i am good, let's catch up!"></ListItemText>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <ListItemText align="right" secondary="10:30"></ListItemText>
-                                </Grid>
-                            </Grid>
-                        </ListItem>
+                        <ChatRow key="1" text={assistantAnswer.request} rawText={assistantAnswer.request} role='user' />
+                        <ChatRow key="2" text={assistantAnswer.responseMarkdown} rawText={assistantAnswer.response} role='assistant' />
                     </List>
                     <Divider />
-                    <Grid container style={{padding: '20px'}}>
+                    {/* <Grid container style={{padding: '20px'}}>
                         <Grid item xs={11}>
                             <TextField id="outlined-basic-email" label="Type Something" fullWidth />
                         </Grid>
-                        <Grid xs={1} align="right">
+                        <Grid item xs={1} align="right">
                             <Fab color="primary" aria-label="add"><SendIcon /></Fab>
                         </Grid>
-                    </Grid>
+                    </Grid> */}
                 </Grid>
             </Grid>
         </Page>

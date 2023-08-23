@@ -29,8 +29,6 @@ export default function ProjectList({ projects }) {
     //const [quickCreateProjectName, setQucikCreateProjectName] = useState("")
     // const []
 
-    const projectOrder = useFetcher();
-
     const onDragEnd = (result) => {
         if (!result.destination) {
             return;

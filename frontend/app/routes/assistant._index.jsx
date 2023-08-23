@@ -1,5 +1,6 @@
 import Grid from '@mui/material/Unstable_Grid2';
 import { TextField, Button } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Page from '~/components/Page';
 
 import Accordion from '@mui/material/Accordion';
@@ -12,6 +13,9 @@ import { useState } from 'react';
 
 import { redirect } from "@remix-run/node";
 import { gql, graphQLClient } from '~/graphql';
+import { useFetcher } from '@remix-run/react';
+import { jsonToFormData, formDataToJson } from '~/utils/formUtils';
+
 
 const AskAssistant = gql`
 mutation AskAssistant($system: String!, $request: String!){
@@ -21,8 +25,9 @@ mutation AskAssistant($system: String!, $request: String!){
 }
 `
 
-export async function action ({ request }){
-    const ask = await request.json();
+export async function action({ request }){
+    const formData = await request.formData();
+    const ask = formDataToJson(formData)
     
     const { data } = await graphQLClient.query({
         query: AskAssistant,
@@ -37,11 +42,13 @@ export async function action ({ request }){
 export default function Assistant(){
     const [isAsking, setIsAsking] = useState(false)
     const [answer, setAnswer] = useState()
+
+    const fetcher = useFetcher();
     
     const prompt = {
-        name: "Spotify Workplace",
-        system_message: "Testing",
-        request_template: 'Be a parrot and make a noise!'
+        name: "Default",
+        system_message: "",
+        request_template: ""
     }
 
     const formik = useFormik({
@@ -54,19 +61,13 @@ export default function Assistant(){
         }
     });
     const submit = async (request) => {
-        const response = await fetch(`/assistant`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(request)  
-            }
-        )
+        setIsAsking(true);
 
-        const body = await response.json()
+        fetcher.submit(jsonToFormData(request), {
+            method: "POST",
+            action: `/assistant`,
+        });
 
-        console.log(body)
     }
 
     return (
@@ -100,10 +101,12 @@ export default function Assistant(){
                                 name='request'
                                 value={formik.values.request}
                                 onChange={formik.handleChange}/>
-                    <Button variant="contained"
+                    <LoadingButton variant="contained"
+                            loading={isAsking}
+                            loadingIndicator="Loading…"
                             onClick={formik.handleSubmit}>
-                            Ask
-                    </Button>
+                            <span>Ask</span>
+                    </LoadingButton>
                 </Grid>
             </Grid>
         </Page>

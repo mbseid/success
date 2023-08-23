@@ -17,6 +17,15 @@
       - "search"
     hidden: false
 
+- model: success.link
+  pk: a45da3f5-2249-4a1f-9436-cb8829404197
+  fields:
+    url: "https://www.bing.com"
+    title: "Bing"
+    tags:
+      - "search"
+    hidden: false
+
 - model: success.Person
   pk: 8c058ccb-20bc-4a83-a5c0-bd17b72a616f
   fields:
