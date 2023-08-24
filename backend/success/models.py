@@ -76,14 +76,17 @@ class SearchIndexManager(models.Manager):
         # get the full objects
         def find_objects(items: List[SearchIndex], model_class):
             item_ids = map(lambda x: x.item_id, items)
+
             return model_class.objects.filter(pk__in=list(item_ids))
         
         # Join the 3 search types together
         retrieved_objects = itertools.chain(find_objects(grouped_objects['link'], Link), find_objects(grouped_objects['person'], Person), find_objects(grouped_objects['project'], Project))
         
+        retrieved_objects = list(retrieved_objects)
+        
         # return in the order of the search results
         def find_by_id(object):
-            return next(x for x in retrieved_objects if x.id == object.item_id )
+            return next(x for x in retrieved_objects if x.id == object.item_id)
         
         return list(map(find_by_id, objects))
 

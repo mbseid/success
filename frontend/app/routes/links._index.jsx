@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, memo } from 'react';
 import useDebounce from '~/utils/debounce';
 import { Link as RouterLink, useLoaderData, useFetcher } from '@remix-run/react';
 import { json } from '@remix-run/node';
@@ -9,7 +9,7 @@ import Page from '~/components/Page';
 import { LinkCard, LinksSort } from '~/components/link';
 import SearchBar from '~/components/SearchBar';
 import AddIcon from '@mui/icons-material/Add';
-
+import CircularProgress from '@mui/material/CircularProgress';
 import { graphQLClient, gql } from '~/graphql';
 
 const query = gql`
@@ -34,6 +34,14 @@ export const meta = () => {
   return [{ title: "Links | Success" }];
 }
 
+const LinkList = memo(function LinkList({links}){
+  return (<>
+    {links.map((link) => (
+      <LinkCard key={link.id} item={link} />
+    ))}
+  </>)
+})
+
 export default function Links(){
   const { links } = useLoaderData();
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,15 +50,18 @@ export default function Links(){
 
   const searchLinks = (query) => {
     setSearchQuery(query);
-    debouncedRequest()
+    if(query)
+      debouncedRequest()
   }
 
   const debouncedRequest = useDebounce(() => {
     linkSearch.submit({ query: searchQuery }, {
       method: "get",
-      action: `/links/search`,
+      action: "/links/search",
     });
   }, 900);
+
+  const isSearching = searchQuery.length > 0;
   
   return (
     <Page title="Links">
@@ -70,18 +81,16 @@ export default function Links(){
         </Stack>
 
         <Grid container spacing={3}>
-          {(linkSearch.state === "idle" && linkSearch.data && searchQuery) ?
-          <>
-            {linkSearch.data.search.map((link) => (
-              <LinkCard key={link.id} item={link} />
-            ))}
-          </>
-          :
-          <>
-            {links.map((link) => (
-              <LinkCard key={link.id} item={link} />
-            ))}
-          </>}
+          {
+            (() => {
+              if(linkSearch.state == "submitting")
+                return <CircularProgress />
+              if(linkSearch.state == "idle" && linkSearch.data && isSearching)
+                return <LinkList links={linkSearch.data.search} />
+              return <LinkList links={links} />
+
+            })()
+          }
         </Grid>
       </Container>
     </Page>
