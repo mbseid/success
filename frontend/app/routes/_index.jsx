@@ -5,10 +5,14 @@ import {
 } from "@remix-run/react";
 import { json } from '@remix-run/node';
 
+import { useState } from 'react';
+
 // @mui
 import { Grid, Container, Typography, Card, styled } from '@mui/material';
+import TextField from '@mui/material/TextField';
 // components
 import Page from '~/components/Page';
+import useDebounce from '~/utils/debounce';
 import AppWidgetSummary from '~/dashboard/AppWidgetSummary';
 
 import LinkIcon from '@mui/icons-material/Link';
@@ -25,11 +29,14 @@ const query = gql`
       people
       link
     }
-    projects(order: { order: DESC }) {
+    projects(order: { order: ASC }) {
       id
       name
       due
       order
+    }
+    scratchpad{
+      body
     }
   }
 `;
@@ -54,7 +61,31 @@ export const meta = () => {
 };
 
 export default function Index() {
-  const { count, projects } = useLoaderData();
+  const { count, projects, scratchpad } = useLoaderData();
+
+  const [scratchPadValue, setScratchPadValue] = useState(scratchpad.body);
+
+  const postScratchPad = useDebounce(() => {
+    const body = scratchPadValue
+
+    fetch(`/scratchpad`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          body
+        })  
+      }
+    )
+  }, 500);
+
+  const updateScratchPad = (e) => {
+    setScratchPadValue(e.target.value);
+
+    postScratchPad();
+  }
 
   const navigate = useNavigate();
 
@@ -88,6 +119,18 @@ export default function Index() {
               color="info"
               icon={<PersonIcon />}
               onClick={() => navigate('/people')}/>
+          </Grid>
+
+          <Grid item xs={12} sm={12} md={12}>
+            <Typography variant="h4">Scratch Pad</Typography>
+            <TextField
+                id="outlined-multiline-static"
+                multiline
+                rows={10}
+                sx={{width: "100%"}}
+                value={scratchPadValue}
+                onChange={updateScratchPad}
+              />
           </Grid>
          
           {/*

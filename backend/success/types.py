@@ -93,3 +93,8 @@ class AssistantAnswer:
     request: auto
     response: auto
     datetime: auto
+
+@strawberry.django.type(models.ScratchPad)
+class ScratchPad:
+    id: auto
+    body: auto

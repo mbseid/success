@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVectorField, SearchVector, SearchQuery
 from ordered_model.models import OrderedModel
+from solo.models import SingletonModel
 import logging
 
 from collections import defaultdict
@@ -112,6 +113,9 @@ class AssistantAnswer(SuccessModel):
     request = models.TextField()
     response = models.TextField()
     datetime = models.DateTimeField(auto_now_add=True)
+
+class ScratchPad(SingletonModel):
+    body = models.TextField()
 
 logger = logging.getLogger(__name__)
 

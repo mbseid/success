@@ -39,7 +39,6 @@ export default function ProjectList({ projects }) {
         }
 
         const projectId = result.draggableId
-        const order = result.source.index
 
         setLocalItems((prev) => {
             const temp = [...prev];
@@ -54,7 +53,7 @@ export default function ProjectList({ projects }) {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                order
+                order: result.destination.index
               })  
             })
 

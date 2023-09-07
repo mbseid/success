@@ -43,6 +43,20 @@ The frontend of this project is built using Remix and React. Remix is a powerful
 ### Database
 The database used for this project is PostgreSQL. PostgreSQL is a reliable and feature-rich open-source database management system. It offers advanced data management capabilities and ensures the security and integrity of your data. Success is a single tennant small data product. All types of data needs should eb handled by Postgres, ranging from Search, Cache and Data. 
 
+## Backup and Restore
+### Backup
+
+### Restore
+To find the snapshots use the following command:
+`docker exec -it success-backup-1 restic snapshots`
+
+Pick the snapshot you would like to restore. Copy the ID. Use that ID in the following command to restore the backup from storage:
+
+`docker exec -it success-backup-1 restic restore <ID> --target /tmp/restic`
+
+The restored files are stored in the container in the target directory. You can run commands from there or copy them to the laptop to restore.
+`docker cp success-backup-1:/tmp/restic . `
+
 ## Support
 
 If you encounter any issues or have any questions about Success, submit a GitHub issue. 

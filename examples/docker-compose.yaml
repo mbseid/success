@@ -3,6 +3,7 @@ version: '3.9'
 services:
   frontend:
     image: "ghcr.io/mbseid/success-frontend:main"
+    container_name: "success-frontend"
     restart: always
     ports:
       - "3000:3000"
@@ -12,6 +13,7 @@ services:
       - backend
   backend:
     image: "ghcr.io/mbseid/success-backend:main"
+    container_name: "success-backend"
     restart: always
     environment:
       - POSTGRES_NAME=postgres
@@ -23,8 +25,30 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  backup:
+    image: mazzolino/restic
+    container_name: "success-backup"
+    restart: always
+    environment:
+      BACKUP_CRON: "0 30 3 * * *"
+      RESTIC_REPOSITORY: b2:{{b2-bucket-name}}:{{path | /restic}}
+      RESTIC_PASSWORD: {{password}}
+      RESTIC_BACKUP_ARGS: >-
+        --verbose
+      B2_ACCOUNT_ID: {{account_id}}
+      B2_ACCOUNT_KEY: {{account_key}}
+      TZ: America/New_York
+      PRE_COMMANDS: |-
+        mkdir -p /data/postgres
+        docker exec success-db pg_dumpall -U postgres > /data/postgres/dump_`date +%d-%m-%Y"_"%H_%M_%S`.sql
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      db:
+        condition: service_healthy
   db:
-    image: postgres
+    image: postgres:postgres:15.4
+    container_name: "success-db"
     restart: always
     ports:
       - "5432:5432"

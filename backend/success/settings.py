@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'strawberry.django',
     'ordered_model',
+    'solo',
     'success'
 ]
 

@@ -4,7 +4,7 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List, Union, Optional
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad
 from . import models
 from . import assistant
 import uuid
@@ -45,6 +45,10 @@ class Query:
     @strawberry.field
     def count(self) -> Count:
         return Query.Count()
+    
+    @strawberry_django.field
+    def scratchpad(self) -> ScratchPad:
+        return models.ScratchPad.get_solo()
 
 @strawberry.type
 class Mutation:
@@ -72,6 +76,13 @@ class Mutation:
             prompt = models.PromptTemplate.objects.get(pk=promptID)
             system = prompt.system_message
         return assistant.predict(system, request)
+
+    @strawberry_django.mutation
+    def updateScratchPad(self, body: str) -> ScratchPad:
+        scratch_pad = models.ScratchPad.get_solo()
+        scratch_pad.body = body
+        scratch_pad.save()
+        return scratch_pad
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
