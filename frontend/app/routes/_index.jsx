@@ -29,7 +29,7 @@ const query = gql`
       people
       link
     }
-    projects(order: { order: ASC }) {
+    projects(order: { order: ASC }, filters: { complete: false }) {
       id
       name
       due

@@ -4,7 +4,7 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List, Union, Optional
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad, ProjectPartialInput
 from . import models
 from . import assistant
 import uuid
@@ -63,6 +63,7 @@ class Mutation:
     updatePersonLog: List[PersonLog] = mutations.update(PersonLogInput)
 
     createProject: Project = mutations.create(ProjectInput)
+    updateProject: List[Project] = mutations.update(ProjectPartialInput)
 
     @strawberry_django.mutation
     def reorder_project(self, projectID: uuid.UUID, order: int) -> Project:

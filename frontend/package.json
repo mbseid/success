@@ -35,6 +35,7 @@
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
+    "remix-utils": "^6.6.0",
     "simplebar": "^5.3.8",
     "simplebar-react": "^2.4.1",
     "ua-parser-js": "^1.0.35",

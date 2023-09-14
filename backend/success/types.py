@@ -65,18 +65,32 @@ class PersonLogInput:
     note: auto
     person: auto
 
+@strawberry.django.filters.filter(models.Project, lookups=True)
+class ProjectFilter:
+    id: auto
+    name: auto
+    complete: auto
+
 @strawberry.django.input(models.Project)
 class ProjectInput:
     name: auto
     description: auto
     due: auto
 
+@strawberry.django.input(models.Project, partial=True)
+class ProjectPartialInput:
+    name: auto
+    description: auto
+    notes: auto
+    due: auto
+    complete: auto
+
 @strawberry.django.order(models.Person)
 class ProjectOrder:
     order: auto
     date: auto
 
-@strawberry.django.type(models.Project, order=ProjectOrder)
+@strawberry.django.type(models.Project, order=ProjectOrder, filters=ProjectFilter)
 class Project:
     id: auto
     name: auto

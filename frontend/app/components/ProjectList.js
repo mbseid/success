@@ -5,6 +5,7 @@ import TextField from '@mui/material/TextField';
 import { useFetcher, Link } from '@remix-run/react';
 import AddIcon from '@mui/icons-material/Add';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import { alpha, styled } from '@mui/material/styles';
 
 
 const getItemStyle = (isDragging, draggableStyle) => ({
@@ -22,6 +23,13 @@ const getListStyle = isDraggingOver => ({
     background: isDraggingOver ? "lightblue" : "inherit",
     padding: 8,
 });
+
+const ProjectListLink = styled(Link)(({theme}) => ({
+    color: "inherit",
+    "& span.MuiTypography-root": {
+        cursor: "pointer"
+    }
+}))
 
 export default function ProjectList({ projects }) {
 
@@ -106,6 +114,9 @@ export default function ProjectList({ projects }) {
                                                     ref={provided.innerRef}
                                                     {...provided.draggableProps}
                                                     {...provided.dragHandleProps}
+                                                    component={ProjectListLink}
+                                                    variant='h6'
+                                                    to={`/projects/${item.id}`}
                                                     style={getItemStyle(
                                                         snapshot.isDragging,
                                                         provided.draggableProps.style
