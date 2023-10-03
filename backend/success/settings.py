@@ -143,21 +143,27 @@ LOGGING = {
             'format': '[DJANGO] %(levelname)s %(asctime)s %(module)s '
                         '%(name)s.%(funcName)s:%(lineno)s: %(message)s'
         },
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
     },
     'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'default',
-        }
+        'db_log': {
+            'level': 'ERROR',
+            'class': 'success.error_handler.DatabaseErrorHandler'
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+        },
     },
-    'loggers': {
-        '*': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        }
-    },
+    "root": {
+        "handlers": ["db_log", "console"],
+        "level": "WARNING",
+        "propagate": True,
+    }
 }
 
 # REST

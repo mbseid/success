@@ -112,3 +112,10 @@ class AssistantAnswer:
 class ScratchPad:
     id: auto
     body: auto
+
+@strawberry.django.type(models.SystemLog)
+class SystemLog:
+    id: auto
+    level: auto
+    msg: auto
+    trace: auto

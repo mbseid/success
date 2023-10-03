@@ -4,7 +4,7 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List, Union, Optional
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad, ProjectPartialInput
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad, ProjectPartialInput, SystemLog
 from . import models
 from . import assistant
 import uuid
@@ -23,6 +23,8 @@ class Query:
     assistantAnswer: AssistantAnswer = strawberry_django.field()
     assistantAnswers: List[AssistantAnswer] = strawberry_django.field()
     
+    system_logs: List[SystemLog] = strawberry_django.field()
+
     @strawberry_django.field
     def tags(self) -> List[str]:
         return models.Link.objects.unique_tags()
@@ -44,6 +46,7 @@ class Query:
     
     @strawberry.field
     def count(self) -> Count:
+        1/0
         return Query.Count()
     
     @strawberry_django.field

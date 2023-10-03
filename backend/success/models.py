@@ -1,6 +1,7 @@
 from typing import List
 import uuid
 
+from django.utils.translation import gettext_lazy as _
 from django.db import models, connection, transaction
 from django.db.models import Count, F, Func, Q
 from django.db.models.signals import post_save
@@ -126,3 +127,24 @@ def update_view(sender, **kwargs):
     with connection.cursor() as cursor:
         cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY success_search_index;")
     logger.info("Reindexed the database.")
+
+# System Stuff ----
+
+LOG_LEVELS = (
+    (logging.NOTSET, _('NotSet')),
+    (logging.INFO, _('Info')),
+    (logging.WARNING, _('Warning')),
+    (logging.DEBUG, _('Debug')),
+    (logging.ERROR, _('Error')),
+    (logging.FATAL, _('Fatal')),
+)
+
+class SystemLog(models.Model):
+    logger_name = models.CharField(max_length=100)
+    level = models.PositiveSmallIntegerField(choices=LOG_LEVELS, default=logging.ERROR, db_index=True)
+    msg = models.TextField()
+    trace = models.TextField(blank=True, null=True)
+    create_datetime = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    def __str__(self):
+        return self.msg
