@@ -12,9 +12,9 @@ import MenuPopover from '../../components/MenuPopover';
 
 const MENU_OPTIONS = [
   {
-    label: 'Settings',
+    label: 'System Logs',
     icon: 'eva:settings-2-fill',
-    linkTo: '#',
+    linkTo: '/settings/logs',
   },
 ];
 

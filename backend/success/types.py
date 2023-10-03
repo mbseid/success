@@ -113,9 +113,14 @@ class ScratchPad:
     id: auto
     body: auto
 
-@strawberry.django.type(models.SystemLog)
+@strawberry.django.order(models.SystemLog)
+class SystemLogOrder:
+    create_datetime: auto
+
+@strawberry.django.type(models.SystemLog, order=SystemLogOrder, pagination=True)
 class SystemLog:
     id: auto
     level: auto
     msg: auto
     trace: auto
+    create_datetime: auto

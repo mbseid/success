@@ -46,7 +46,6 @@ class Query:
     
     @strawberry.field
     def count(self) -> Count:
-        1/0
         return Query.Count()
     
     @strawberry_django.field
