@@ -100,6 +100,19 @@ class Project:
     notes: auto
     order: auto
 
+@strawberry.django.input(models.PromptTemplate)
+class PromptTemplateInput:
+    name: auto
+    system_message: auto
+    request_template: auto
+
+@strawberry.django.type(models.PromptTemplate)
+class PromptTemplate:
+    id: auto
+    name: auto
+    system_message: auto
+    request_template: auto
+
 @strawberry.django.type(models.AssistantAnswer)
 class AssistantAnswer:
     id: auto
@@ -112,6 +125,9 @@ class AssistantAnswer:
 class ScratchPad:
     id: auto
     body: auto
+
+
+### System Stuff
 
 @strawberry.django.order(models.SystemLog)
 class SystemLogOrder:

@@ -4,7 +4,7 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List, Union, Optional
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad, ProjectPartialInput, SystemLog
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad, ProjectPartialInput, PromptTemplate, PromptTemplateInput, SystemLog
 from . import models
 from . import assistant
 import uuid
@@ -19,6 +19,9 @@ class Query:
 
     project: Project = strawberry_django.field()
     projects: List[Project] = strawberry_django.field()
+
+    promptTemplate: PromptTemplate = strawberry_django.field()
+    promptTemplates: List[PromptTemplate] = strawberry_django.field()
 
     assistantAnswer: AssistantAnswer = strawberry_django.field()
     assistantAnswers: List[AssistantAnswer] = strawberry_django.field()
@@ -66,6 +69,9 @@ class Mutation:
 
     createProject: Project = mutations.create(ProjectInput)
     updateProject: List[Project] = mutations.update(ProjectPartialInput)
+
+    createPromptTemplate: PromptTemplate = mutations.create(PromptTemplateInput)
+    # updateProject: List[Project] = mutations.update(ProjectPartialInput)
 
     @strawberry_django.mutation
     def reorder_project(self, projectID: uuid.UUID, order: int) -> Project:

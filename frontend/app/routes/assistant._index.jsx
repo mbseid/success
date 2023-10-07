@@ -8,15 +8,31 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+
 import { useFormik } from 'formik';
 import { useState } from 'react';
 
-import { redirect } from "@remix-run/node";
+import { redirect, json } from "@remix-run/node";
 import { gql, graphQLClient } from '~/graphql';
-import { useFetcher } from '@remix-run/react';
+import { useFetcher, Link, useLoaderData } from '@remix-run/react';
 import { jsonToFormData, formDataToJson } from '~/utils/formUtils';
 
 
+const LoadPromptTemplates = gql`
+query LoadPromptTemplates{
+    promptTemplates{
+        id
+        name
+        systemMessage
+        requestTemplate
+    }
+}
+`
 const AskAssistant = gql`
 mutation AskAssistant($system: String!, $request: String!){
     assistant(system: $system, request: $request){
@@ -39,7 +55,15 @@ export async function action({ request }){
     return redirect(`/assistant/answer/${data.assistant.id}`);
 };
 
+export async function loader({request, params}){
+    const { data } = await graphQLClient.query({
+        query: LoadPromptTemplates
+    });
+    return json(data);
+}
+
 export default function Assistant(){
+    const { promptTemplates } = useLoaderData();
     const [isAsking, setIsAsking] = useState(false)
     const [answer, setAnswer] = useState()
 
@@ -72,11 +96,24 @@ export default function Assistant(){
 
     return (
         <Page title="Assistant">
-            <h1>Assistant</h1>
+            <Grid container justifyContent="space-between" alignItems="center">
+                <h1>Assistant</h1>
+                <Link to="/assistant/answers">see answers</Link>
+            </Grid>
             <Grid container spacing={2}>
                 <Grid xs={4}>
                     <h2>Prompt List</h2>
-                    <Button variant="contained" onClick={submit}>Ask</Button>
+                    <List>
+                        {promptTemplates.map((promptTemplate) => {
+                            return (
+                                <ListItemButton>
+                                    <ListItemText primary={promptTemplate.name} />
+                                </ListItemButton>
+                            )
+                        })}
+                        
+                    </List>
+                    <Link to="/assistant/templates/new">Add</Link>
                 </Grid>
                 <Grid xs={8}>
                     <h2>Ask Away</h2>
