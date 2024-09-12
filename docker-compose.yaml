@@ -24,6 +24,7 @@ services:
     command: npm run dev
     volumes:
       - ./frontend:/code
+      - /code/node_modules
     ports:
       - "3000:3000"
       - "8002:8002"
