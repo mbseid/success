@@ -1,5 +1,4 @@
-from langchain.llms import OpenAI
-from langchain.chat_models import ChatOpenAI
+from langchain_openai.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 from .models import AssistantAnswer
 

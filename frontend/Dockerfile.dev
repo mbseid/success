@@ -1,5 +1,9 @@
-from node:latest
+FROM node:20-bullseye-slim
+
+SHELL ["/bin/bash", "-ec"]
 
 WORKDIR /code
 
-COPY . /code/
+COPY package.json ./
+
+RUN npm install

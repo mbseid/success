@@ -1,10 +1,12 @@
 django==4.2.3
 django-extensions
 django-solo
-strawberry-graphql-django==0.16.0
+strawberry-graphql-django==0.47.2
 django-ordered-model
 psycopg2
 pyyaml
 langchain
+langchain-community
+langchain-openai
 openai
 gunicorn

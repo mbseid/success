@@ -18,8 +18,8 @@ You can easily self host Success. I suggust using Docker compose to run the appl
 
 1. Create your [docker-compose.yaml](https://github.com/mbseid/success/blob/main/examples/docker-compose.yaml) based off the example linked. 
 2. Update the environment variables with your secrets: `postgres`, `SECRET_KEY`, `OPENAI_API_KEY`, etc.
-3. Run Success `docker compose up -d`
-4. Run the migrations `docker compose run backend migrate.py migrate`
+3. Run the migrations `docker compose run backend python manage.py migrate`
+4. Run Success `docker compose up -d`
 5. Navigate to `http://localhost:3000` and celebrate! 
 
 ## Contributing
