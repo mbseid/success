@@ -31,7 +31,10 @@ import { jsonToFormData } from '~/utils/formUtils';
 
 import lodash from 'lodash';
 
-import { parseISO } from 'date-fns'
+import { parseISO } from 'date-fns';
+
+import { useConfirm } from "material-ui-confirm";
+
 
 
 const query = gql`
@@ -76,21 +79,39 @@ export const meta = ({ data }) => {
   return [{ title: `${data.person.name} | Person | Success` }];
 }
 
-function ProfileCover({ person }) {
-  const { name, team, role } = person;
+function ProfileCover({ person, deleteAction }) {
+  const { id, name, team, role } = person;
+
+  const confirm = useConfirm();
+
+  const personDeleteAction = () => {
+    confirm({ description: "Deleting a person cannot be reversed." })
+      .then(() => {
+        deleteAction(id)
+      })
+      .catch(() => {
+        /* ... */
+      });
+  }
 
   return (
-    <Box
-      sx={{
+   
+      <Grid container spacing={2} sx={{
         mt: { xs: 1, md: 0 },
         textAlign: { xs: 'center', md: 'left' },
-      }}
-    >
-      <Stack>
-        <Typography variant="h4">{name}</Typography>
-        <Typography sx={{ opacity: 0.72 }}>{`${role} @ ${team}`}</Typography>
-      </Stack>
-    </Box>
+      }}>
+        <Grid item xs={10}>
+          <Stack>
+            <Typography variant="h4">{name}</Typography>
+            <Typography sx={{ opacity: 0.72 }}>{`${role} @ ${team}`}</Typography>
+          </Stack>
+        </Grid>
+        <Grid item xs={2}>
+          <Stack>
+            <Button variant="outlined" color="error" onClick={personDeleteAction}>Delete</Button>
+          </Stack>
+        </Grid>
+      </Grid>
 
   );
 }
@@ -164,6 +185,13 @@ export default function ViewPerson(){
     setAddNote(false);
   }
 
+  const deleteAction = (id) => {
+    submit(new FormData(), {
+      method: "post",
+      action: `/people/${id}/delete`
+    })
+  }
+
   const logs = person.logs.map((l) => {
     return {
       ...l,
@@ -175,7 +203,7 @@ export default function ViewPerson(){
     <Page title="People">
       <Container>
         <Stack spacing={3}>
-            <ProfileCover person={person} />
+            <ProfileCover person={person} deleteAction={deleteAction}/>
             {!addNote?
                 <Grid container>
                 <Grid item s={3}>

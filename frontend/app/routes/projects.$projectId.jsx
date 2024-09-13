@@ -24,6 +24,7 @@ import { markDownToHtml } from '~/utils/markdown';
 import { namedAction } from "remix-utils";
 import { jsonToFormData, formDataToJson } from '~/utils/formUtils';
 
+import { useConfirm } from "material-ui-confirm";
 
 const query = gql`
 query GetProject($projectId: ID!) {
@@ -102,12 +103,6 @@ export const meta = ({ data }) => {
 
 function ProfileCover({ project, completeClick, editClick }) {
     const { name, description, due } = project;
-    const [completeOpen, setCompleteOpen] = useState(false)
-
-    const completeProject = () => {
-        setCompleteOpen(false)
-        completeClick()
-    }
 
     return (
         <Box
@@ -131,31 +126,9 @@ function ProfileCover({ project, completeClick, editClick }) {
                     Edit
                 </Button>
                 <Button variant="contained" color="success"
-                    onClick={() => setCompleteOpen(true)}>
+                    onClick={completeClick}>
                     Complete
                 </Button>
-                <Dialog
-                    open={completeOpen}
-                    onClose={() => setCompleteOpen(false)}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                    <DialogTitle id="alert-dialog-title">
-                        {"Have you completed this project?"}
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-description">
-                            Are you fully done with this body of work? Once complete, this project will
-                            be hidden unless explicitly searched for.
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setCompleteOpen(false)}>No, more work</Button>
-                        <Button onClick={completeProject} autoFocus>
-                            Woot! I'm done
-                        </Button>
-                    </DialogActions>
-                </Dialog>
             </Box>
         </Box>
 
@@ -188,13 +161,26 @@ export default function ProjectView() {
     }
 
     const submit = useSubmit();
+    const confirm = useConfirm();
 
     const completeProject = () => {
-        const values = {}
-        submit(jsonToFormData(values), {
-            method: "post",
-            action: `/projects/${project.id}?/complete`
+        confirm({
+            title: "Have you completed this project?",
+            description: "Are you fully done with this body of work? Once complete, this project will be hidden unless explicitly searched for.",
+            confirmationText: "Woot! I'm done",
+            cancellationText: "I have more work to do"
         })
+            .then(() => {
+                const values = {}
+                submit(jsonToFormData(values), {
+                    method: "post",
+                    action: `/projects/${project.id}?/complete`
+                })
+            })
+            .catch(() => {
+                /* ... */
+            });
+        
     }
 
     const editProject = () => {

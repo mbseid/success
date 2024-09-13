@@ -19,7 +19,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { clientStyleContext} from '~/theme';
 
 import DashboardLayout from "~/layouts/dashboard"
-
+import { ConfirmProvider } from "material-ui-confirm";
 
 export const links = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
@@ -72,11 +72,13 @@ const Document = withEmotionCache(({ children, title }, emotionCache) => {
 export default function App() {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} >
-      <Document>
-        <DashboardLayout>
-          <Outlet />
-        </DashboardLayout>
-      </Document>
+      <ConfirmProvider>
+        <Document>
+          <DashboardLayout>
+            <Outlet />
+          </DashboardLayout>
+        </Document>
+      </ConfirmProvider>
     </LocalizationProvider>
   );
 }

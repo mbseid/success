@@ -63,6 +63,7 @@ class Mutation:
 
     createPerson: Person = mutations.create(PersonInput)
     updatePeople: List[Person] = mutations.update(PersonInput)
+    deletePeople: List[Person] = mutations.delete()
 
     createPersonLog: PersonLog = mutations.create(PersonLogInput)
     updatePersonLog: List[PersonLog] = mutations.update(PersonLogInput)
