@@ -20,6 +20,9 @@ class SuccessModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     hidden = models.BooleanField(default=False)
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         abstract = True
 
@@ -65,7 +68,7 @@ class Project(SuccessModel, OrderedModel):
         ordering = ['order']
 
 class SearchIndexManager(models.Manager):
-    def search(self, query, item_type = None):
+    def search(self, query, item_type = None, order = None):
         objects = SearchIndex.objects.filter(Q(body_vector=SearchQuery(query, search_type='websearch')) | Q(body__icontains=query))
         if item_type:
             objects = objects.filter(item_type=item_type)
@@ -86,11 +89,17 @@ class SearchIndexManager(models.Manager):
         
         retrieved_objects = list(retrieved_objects)
         
+        
         # return in the order of the search results
         def find_by_id(object):
             return next(x for x in retrieved_objects if x.id == object.item_id)
         
-        return list(map(find_by_id, objects))
+        enriched_objects = list(map(find_by_id, objects))
+
+        if order:
+            enriched_objects = sorted(enriched_objects, key=lambda x: getattr(x, order.field), reverse=order.sort_order())
+        
+        return enriched_objects
 
 class SearchIndex(models.Model):
     item_type = models.CharField(max_length=200)

@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 
 const SearchLinks = gql`
 query SearchLinks($query: String!){
-    search(query: $query, type: "link"){
+    search(query: $query, type: "link", order: { field: "created_at", direction: "desc" }){
         __typename
         ... on Link {
             id

@@ -14,7 +14,9 @@ import { graphQLClient, gql } from '~/graphql';
 
 const query = gql`
   query GetLinks {
-    links {
+    links(order: {
+      createdAt: DESC
+    }) {
       id
       title
       url

@@ -5,12 +5,16 @@ from typing import List, Optional
 
 from . import models
 
+@strawberry.django.order(models.Link)
+class LinkOrder:
+    created_at: auto
+
 @strawberry.django.filters.filter(models.Link, lookups=True)
 class LinkFilter:
     id: auto
     url: auto
 
-@strawberry.django.type(models.Link, filters=LinkFilter)
+@strawberry.django.type(models.Link, filters=LinkFilter, order=LinkOrder)
 class Link:
     id: auto
     title: auto
@@ -105,6 +109,14 @@ class PromptTemplateInput:
     name: auto
     system_message: auto
     request_template: auto
+
+@strawberry.input
+class SearchOrder:
+    field: str
+    direction: Optional[str] = "asc"
+
+    def sort_order(self):
+        return self.direction == "desc"
 
 @strawberry.django.type(models.PromptTemplate)
 class PromptTemplate:

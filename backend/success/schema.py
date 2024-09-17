@@ -3,8 +3,8 @@ import strawberry_django
 
 from strawberry_django import mutations
 
-from typing import List, Union, Optional
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad, ProjectPartialInput, PromptTemplate, PromptTemplateInput, SystemLog
+from typing import List, Union, Optional, Dict
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad, ProjectPartialInput, PromptTemplate, PromptTemplateInput, SystemLog, SearchOrder
 from . import models
 from . import assistant
 import uuid
@@ -33,8 +33,8 @@ class Query:
         return models.Link.objects.unique_tags()
     
     @strawberry_django.field
-    def search(self, query: str, type: Optional[str] = None) -> List[Union[Link,Person]]:
-        return models.SearchIndex.objects.search(query, type)
+    def search(self, query: str, order: Optional[SearchOrder] = None, type: Optional[str] = None) -> List[Union[Link,Person]]:
+        return models.SearchIndex.objects.search(query, type, order)
     
     @strawberry.type
     class Count:
