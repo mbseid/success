@@ -75,7 +75,8 @@ export default function EditLink() {
           <Grid container>
               <LinkForm path={`/links/${link.id}/edit`}
                         prefilledModel={prefilledModel}
-                        globalTags={tags}/>
+                        globalTags={tags}
+                        checkUrlExists={false} />
           </Grid>
         </Container>
       </Page>

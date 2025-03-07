@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useSearchParams, useActionData, useLoaderData } from "@remix-run/react";
 import { redirect, json } from "@remix-run/node";
+import { Link as RouterLink } from "@remix-run/react";
 
 import Page from '~/components/Page';
 import { Grid, Button, Container, Stack, Typography } from '@mui/material';
@@ -22,16 +23,18 @@ const TagsQuery = gql`
   }
 `;
 
-
 export const action = async ({ request }) => {
   const formData = await request.formData();
-  const link = formDataToJson(formData)
+  const link = formDataToJson(formData);
+  
+  // Create a new link (no longer checking for duplicates here)
   const links = await graphQLClient.mutate({
     mutation: CreateLink,
     variables: {
       data: link
     }
-  })
+  });
+  
   return redirect(`/links`);
 };
 
@@ -45,15 +48,13 @@ export const loader = async () => {
 export default function NewLink() {
     const actionData = useActionData();
     const { tags } = useLoaderData();
-
-
     const [searchParams, setSearchParams] = useSearchParams();
 
     const prefilledModel = {
         title: searchParams.get('title') || "",
         url: searchParams.get('url') || "",
         tags: []
-    }
+    };
 
     return (
       <Page title="Add Link">
@@ -63,10 +64,12 @@ export default function NewLink() {
               Add Link
             </Typography>
           </Stack>
+          
           <Grid container>
             <LinkForm path='/links/new'
                       prefilledModel={prefilledModel}
-                      globalTags={tags} />
+                      globalTags={tags} 
+                      checkUrlExists={true} />
           </Grid>
         </Container>
       </Page>
