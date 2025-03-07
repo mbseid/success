@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import Chip from '@mui/material/Chip';
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+import { useSubmit, useFetcher } from '@remix-run/react';
 import { useFormik } from 'formik';
-import { useSubmit, useFetcher } from '@remix-run/react'
 import * as yup from 'yup';
+
+// MUI Components
+import Autocomplete from '@mui/material/Autocomplete';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Link from '@mui/material/Link';
+import TextField from '@mui/material/TextField';
+
+// Internal imports
 import { jsonToFormData } from '~/utils/formUtils';
 import useDebounce from '~/utils/debounce';
-import Alert from '@mui/material/Alert';
-import Link from '@mui/material/Link';
-
 
 const linkValidation = yup.object({
     title: yup
