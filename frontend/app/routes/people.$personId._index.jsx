@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import { useLoaderData, useSubmit } from "@remix-run/react";
+import { useLoaderData, useSubmit, Link as RouterLink } from "@remix-run/react";
 import { useState } from 'react';
 import { gql, graphQLClient } from '~/graphql';
 
@@ -100,14 +100,15 @@ function ProfileCover({ person, deleteAction }) {
         mt: { xs: 1, md: 0 },
         textAlign: { xs: 'center', md: 'left' },
       }}>
-        <Grid item xs={10}>
+        <Grid item xs={8}>
           <Stack>
             <Typography variant="h4">{name}</Typography>
             <Typography sx={{ opacity: 0.72 }}>{`${role} @ ${team}`}</Typography>
           </Stack>
         </Grid>
-        <Grid item xs={2}>
-          <Stack>
+        <Grid item xs={4}>
+          <Stack direction="row" spacing={2} justifyContent="flex-end">
+            <Button variant="outlined" component={RouterLink} to={`/people/${id}/edit`}>Edit</Button>
             <Button variant="outlined" color="error" onClick={personDeleteAction}>Delete</Button>
           </Stack>
         </Grid>
