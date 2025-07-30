@@ -4,11 +4,12 @@ import math
 
 from django.utils.translation import gettext_lazy as _
 from django.db import models, connection, transaction
-from django.db.models import Count, F, Func, Q
+from django.db.models import Count, F, Func, Q, Case, When, Value, IntegerField
+from django.db.models.functions import Ln, Coalesce
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.postgres.search import SearchVectorField, SearchVector, SearchQuery
+from django.contrib.postgres.search import SearchVectorField, SearchVector, SearchQuery, SearchRank
 from ordered_model.models import OrderedModel
 from solo.models import SingletonModel
 import logging
@@ -71,13 +72,35 @@ class Project(SuccessModel, OrderedModel):
 
 class SearchIndexManager(models.Manager):
     def search(self, query, item_type = None, order = None):
-        objects = SearchIndex.objects.filter(Q(body_vector=SearchQuery(query, search_type='websearch')) | Q(body__icontains=query))
+        search_query = SearchQuery(query, search_type='websearch')
+        objects = SearchIndex.objects.filter(Q(body_vector=search_query) | Q(body__icontains=query))
+        
         if item_type:
             objects = objects.filter(item_type=item_type)
-        # Sort objects into type to query
+
+        # Default ranking with click count boost
+        objects = objects.annotate(
+            search_rank=SearchRank(F('body_vector'), search_query),
+            # Logarithmic click count boost for links only (NULL for others becomes 0)
+            click_boost=Case(
+                When(item_type='link', then=Ln(F('click_count') + Value(1)) * Value(0.1)),
+                default=Value(0),
+                output_field=models.FloatField()
+            )
+        ).order_by('-search_rank', '-click_boost')
         
+        # Add ranking and ordering
+        if order:
+            # Use explicit order parameter
+            order_direction = '-' if order.sort_order() else ''
+            objects = objects.order_by(f'{order_direction}{order.field}')
+            
+        # Database query happens here.
+
+        search_results = list(objects) 
+        # Sort objects into type to query
         grouped_objects = defaultdict(list)
-        for obj in objects:
+        for obj in search_results:
             grouped_objects[obj.item_type].append(obj)
         
         # get the full objects
@@ -96,11 +119,8 @@ class SearchIndexManager(models.Manager):
         def find_by_id(object):
             return next(x for x in retrieved_objects if x.id == object.item_id)
         
-        enriched_objects = list(map(find_by_id, objects))
+        enriched_objects = list(map(find_by_id, search_results))
 
-        if order:
-            enriched_objects = sorted(enriched_objects, key=lambda x: getattr(x, order.field), reverse=order.sort_order())
-        
         return enriched_objects
 
 class SearchIndex(models.Model):
@@ -108,6 +128,8 @@ class SearchIndex(models.Model):
     item_id = models.UUIDField(primary_key=True) 
     body = models.TextField()
     body_vector = SearchVectorField()
+    click_count = models.PositiveIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField()
 
     objects = SearchIndexManager()
     
