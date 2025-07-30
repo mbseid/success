@@ -1,5 +1,6 @@
 from typing import List
 import uuid
+import math
 
 from django.utils.translation import gettext_lazy as _
 from django.db import models, connection, transaction
@@ -36,6 +37,7 @@ class Link(SuccessModel):
     title = models.CharField()
     description = models.CharField(blank=True)
     tags = ArrayField(models.CharField(), blank=True)
+    click_count = models.PositiveIntegerField(default=0)
 
     objects = LinkManager()
 

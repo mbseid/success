@@ -94,5 +94,12 @@ class Mutation:
         scratch_pad.save()
         return scratch_pad
 
+    @strawberry_django.mutation
+    def clickLink(self, linkId: uuid.UUID) -> Link:
+        link = models.Link.objects.get(pk=linkId)
+        link.click_count += 1
+        link.save()
+        return link
+
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

@@ -10,6 +10,8 @@ query SearchLinks($query: String!){
             title
             url
             tags
+            clickCount
+            createdAt
         }
     }
 }

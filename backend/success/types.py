@@ -20,6 +20,8 @@ class Link:
     title: auto
     url: auto
     tags: List[str]
+    click_count: auto
+    created_at: auto
 
 @strawberry.django.input(models.Link)
 class LinkInput:

@@ -21,6 +21,8 @@ const query = gql`
       title
       url
       tags
+      clickCount
+      createdAt
     }
     tags
   }

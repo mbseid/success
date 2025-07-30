@@ -7,7 +7,8 @@ import { Box, Link, Card, Grid, Avatar, Typography, CardContent } from '@mui/mat
 //
 import Iconify from '~/components/Iconify';
 import EditMenu from '~/components/EditMenu';
-import { useSubmit } from '@remix-run/react';
+import { useSubmit, useFetcher } from '@remix-run/react';
+import { fDate } from '~/utils/formatTime';
 
 // ----------------------------------------------------------------------
 
@@ -47,6 +48,13 @@ const EditStyle = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(3),
 }));
 
+const ClickCountStyle = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  marginTop: theme.spacing(1),
+  color: theme.palette.text.secondary,
+}));
+
 const CoverImgStyle = styled('img')({
   top: 0,
   width: '100%',
@@ -64,11 +72,23 @@ LinkCard.propTypes = {
 };
 
 export default function LinkCard({ item, large = false, latest = false }) {
-  let { id, title, description, tags, url } = item;
+  let { id, title, description, tags, url, clickCount, createdAt } = item;
   tags = tags || [];
   const cover = "";
 
   const submit = useSubmit();
+  const fetcher = useFetcher();
+
+  const handleLinkClick = () => {
+    try {
+      fetcher.submit(new FormData(), {
+        method: "patch",
+        action: `/links/${id}/click`
+      });
+    } catch (error) {
+      console.error('Error tracking link click:', error);
+    }
+  };
 
   const deleteAction = () => {
     submit(new FormData(), {
@@ -142,18 +162,13 @@ export default function LinkCard({ item, large = false, latest = false }) {
             }),
           }}
         >
-          {/*
-            <Typography gutterBottom variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>
-              {fDate(createdAt)}
-            </Typography>
-          */}
-
           <TitleStyle
             href={url}
             target="_blank"
             color="inherit"
             variant="subtitle2"
             underline="hover"
+            onClick={handleLinkClick}
             sx={{
               ...(large && { typography: 'h5', height: 60 }),
               ...((large || latest) && {
@@ -165,8 +180,17 @@ export default function LinkCard({ item, large = false, latest = false }) {
           </TitleStyle>
 
           <Typography gutterBottom variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>
+            {fDate(createdAt)}
+          </Typography>
+
+          <Typography gutterBottom variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>
               {description}
           </Typography>
+
+          <ClickCountStyle>
+            <Iconify icon={'material-symbols:touch-app'} sx={{ width: 16, height: 16, mr: 0.5 }} />
+            <Typography variant="caption">{clickCount || 0}</Typography>
+          </ClickCountStyle>
 
           <TagStyle>
             {tags.map((tag, index) => (
