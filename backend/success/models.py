@@ -87,17 +87,21 @@ class SearchIndexManager(models.Manager):
                 default=Value(0),
                 output_field=models.FloatField()
             )
-        ).order_by('-search_rank', '-click_boost')
-        
-        # Add ranking and ordering
-        if order:
-            # Use explicit order parameter
-            order_direction = '-' if order.sort_order() else ''
-            objects = objects.order_by(f'{order_direction}{order.field}')
-            
-        # Database query happens here.
+        )
 
+        # Create balanced ordering
+        if order:
+            # Primary: explicit order, Secondary: search quality as tie-breakers  
+            order_direction = '-' if order.sort_order() else ''
+            objects = objects.order_by(f'{order_direction}{order.field}', '-search_rank', '-click_boost')
+        else:
+            # Default: search quality first
+            objects = objects.order_by('-search_rank', '-click_boost')
+            
+        # Database query happens here, raising the lazy search query.
         search_results = list(objects) 
+
+
         # Sort objects into type to query
         grouped_objects = defaultdict(list)
         for obj in search_results:
