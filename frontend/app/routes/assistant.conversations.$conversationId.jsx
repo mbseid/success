@@ -59,7 +59,7 @@ query GetConversation($conversationId: ID!){
 `
 
 const SendMessageMutation = gql`
-mutation SendMessage($conversationId: ID!, $request: String!){
+mutation SendMessage($conversationId: UUID!, $request: String!){
     sendMessage(conversationID: $conversationId, request: $request){
         id
         content
