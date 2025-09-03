@@ -1,5 +1,17 @@
 import Grid from '@mui/material/Unstable_Grid2';
-import { TextField, Button } from '@mui/material';
+import { 
+    TextField, 
+    Button, 
+    Paper, 
+    Card, 
+    CardContent, 
+    CardActions, 
+    Chip,
+    IconButton,
+    Divider,
+    Box,
+    Stack
+} from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Page from '~/components/Page';
 
@@ -13,6 +25,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import ChatIcon from '@mui/icons-material/Chat';
+import HistoryIcon from '@mui/icons-material/History';
+import AddIcon from '@mui/icons-material/Add';
+import SendIcon from '@mui/icons-material/Send';
 
 import { useFormik } from 'formik';
 import { useState } from 'react';
@@ -33,9 +49,9 @@ query LoadPromptTemplates{
     }
 }
 `
-const AskAssistant = gql`
-mutation AskAssistant($system: String!, $request: String!){
-    assistant(system: $system, request: $request){
+const StartConversation = gql`
+mutation StartConversation($system: String!, $request: String!){
+    startConversation(system: $system, request: $request){
         id
     }
 }
@@ -46,13 +62,13 @@ export async function action({ request }){
     const ask = formDataToJson(formData)
     
     const { data } = await graphQLClient.query({
-        query: AskAssistant,
+        query: StartConversation,
         variables: {
             ...ask
         }
     });
 
-    return redirect(`/assistant/answer/${data.assistant.id}`);
+    return redirect(`/assistant/conversations/${data.startConversation.id}`);
 };
 
 export async function loader({request, params}){
@@ -64,86 +80,201 @@ export async function loader({request, params}){
 
 export default function Assistant(){
     const { promptTemplates } = useLoaderData();
-    const [isAsking, setIsAsking] = useState(false)
-    const [answer, setAnswer] = useState()
+    const [isAsking, setIsAsking] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
 
     const fetcher = useFetcher();
-    
-    const prompt = {
-        name: "Default",
-        system_message: "",
-        request_template: ""
-    }
 
     const formik = useFormik({
         initialValues: {
-            system: prompt.system_message,
-            request: prompt.request_template
+            system: "",
+            request: ""
         },
         onSubmit: (values) => {
           submit(values)
         }
     });
+
     const submit = async (request) => {
         setIsAsking(true);
-
         fetcher.submit(jsonToFormData(request), {
             method: "POST",
             action: `/assistant`,
         });
+    };
 
-    }
+    const handleTemplateSelect = (template) => {
+        setSelectedTemplate(template);
+        formik.setValues({
+            system: template.systemMessage || "",
+            request: template.requestTemplate || ""
+        });
+    };
+
+    const handleClearTemplate = () => {
+        setSelectedTemplate(null);
+        formik.setValues({
+            system: "",
+            request: ""
+        });
+    };
 
     return (
-        <Page title="Assistant">
-            <Grid container justifyContent="space-between" alignItems="center">
-                <h1>Assistant</h1>
-                <Link to="/assistant/answers">see answers</Link>
-            </Grid>
-            <Grid container spacing={2}>
-                <Grid xs={4}>
-                    <h2>Prompt List</h2>
-                    <List>
-                        {promptTemplates.map((promptTemplate) => {
-                            return (
-                                <ListItemButton>
-                                    <ListItemText primary={promptTemplate.name} />
-                                </ListItemButton>
-                            )
-                        })}
-                        
-                    </List>
-                    <Link to="/assistant/templates/new">Add</Link>
+        <Page title="AI Assistant">
+            <Box sx={{ mb: 4 }}>
+                <Grid container justifyContent="space-between" alignItems="center">
+                    <Box>
+                        <Typography variant="h4" component="h1" gutterBottom>
+                            AI Assistant
+                        </Typography>
+                        <Typography variant="subtitle1" color="text.secondary">
+                            Chat with your AI assistant using custom prompts
+                        </Typography>
+                    </Box>
+                    <Button
+                        component={Link}
+                        to="/assistant/conversations"
+                        startIcon={<HistoryIcon />}
+                        variant="outlined"
+                        size="large"
+                    >
+                        View Conversations
+                    </Button>
                 </Grid>
-                <Grid xs={8}>
-                    <h2>Ask Away</h2>
-                    <Accordion>
-                        <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        >
-                            <Typography>System Prompt: {prompt.name}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            <TextField fullWidth
+            </Box>
+
+            <Grid container spacing={3}>
+                {/* Prompt Templates Sidebar */}
+                <Grid xs={12} md={4}>
+                    <Card>
+                        <CardContent>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                <Typography variant="h6">
+                                    Prompt Templates
+                                </Typography>
+                                <IconButton 
+                                    component={Link} 
+                                    to="/assistant/templates/new"
+                                    size="small"
+                                >
+                                    <AddIcon />
+                                </IconButton>
+                            </Box>
+                            
+                            {selectedTemplate && (
+                                <Box mb={2}>
+                                    <Chip
+                                        label={`Using: ${selectedTemplate.name}`}
+                                        onDelete={handleClearTemplate}
+                                        color="primary"
+                                        variant="filled"
+                                    />
+                                </Box>
+                            )}
+
+                            <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+                                {promptTemplates.map((template) => (
+                                    <ListItem key={template.id} disablePadding>
+                                        <ListItemButton
+                                            onClick={() => handleTemplateSelect(template)}
+                                            selected={selectedTemplate?.id === template.id}
+                                        >
+                                            <ListItemIcon>
+                                                <ChatIcon />
+                                            </ListItemIcon>
+                                            <ListItemText 
+                                                primary={template.name}
+                                                secondary={template.systemMessage ? 
+                                                    `${template.systemMessage.slice(0, 50)}...` : 
+                                                    'No system message'
+                                                }
+                                            />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                                {promptTemplates.length === 0 && (
+                                    <ListItem>
+                                        <ListItemText 
+                                            primary="No templates yet"
+                                            secondary="Create your first template to get started"
+                                        />
+                                    </ListItem>
+                                )}
+                            </List>
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                {/* Chat Interface */}
+                <Grid xs={12} md={8}>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" gutterBottom>
+                                Chat Interface
+                            </Typography>
+                            
+                            <Stack spacing={3}>
+                                {/* System Prompt Section */}
+                                <Accordion defaultExpanded={false}>
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                        <Typography>
+                                            System Prompt {selectedTemplate && `(${selectedTemplate.name})`}
+                                            {formik.values.system && (
+                                                <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                                    - {formik.values.system.slice(0, 60)}{formik.values.system.length > 60 ? '...' : ''}
+                                                </Typography>
+                                            )}
+                                        </Typography>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            rows={4}
+                                            name="system"
+                                            label="System message (optional)"
+                                            placeholder="You are a helpful assistant..."
+                                            value={formik.values.system}
+                                            onChange={formik.handleChange}
+                                            variant="outlined"
+                                        />
+                                    </AccordionDetails>
+                                </Accordion>
+
+                                {/* User Message Section */}
+                                <Box>
+                                    <Typography variant="subtitle2" gutterBottom>
+                                        Your Message
+                                    </Typography>
+                                    <TextField
+                                        fullWidth
                                         multiline
-                                        name='system'
-                                        value={formik.values.system}
+                                        rows={8}
+                                        name="request"
+                                        placeholder="Type your question or request here..."
+                                        value={formik.values.request}
                                         onChange={formik.handleChange}
-                                        variant="standard" />
-                        </AccordionDetails>
-                    </Accordion>
-                    <TextField fullWidth
-                                multiline
-                                minRows={12}
-                                name='request'
-                                value={formik.values.request}
-                                onChange={formik.handleChange}/>
-                    <LoadingButton variant="contained"
-                            loading={isAsking}
-                            loadingIndicator="Loading…"
-                            onClick={formik.handleSubmit}>
-                            <span>Ask</span>
-                    </LoadingButton>
+                                        variant="outlined"
+                                        sx={{ mb: 2 }}
+                                    />
+                                </Box>
+                            </Stack>
+                        </CardContent>
+                        
+                        <CardActions sx={{ justifyContent: 'flex-end', px: 3, pb: 3 }}>
+                            <LoadingButton
+                                variant="contained"
+                                size="large"
+                                loading={isAsking}
+                                loadingIndicator="Sending..."
+                                onClick={formik.handleSubmit}
+                                startIcon={<SendIcon />}
+                                disabled={!formik.values.request.trim()}
+                            >
+                                Send Message
+                            </LoadingButton>
+                        </CardActions>
+                    </Card>
                 </Grid>
             </Grid>
         </Page>

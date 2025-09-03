@@ -146,11 +146,43 @@ class PromptTemplate(SuccessModel):
     system_message = models.TextField()
     request_template = models.TextField()
 
-class AssistantAnswer(SuccessModel):
-    system = models.TextField()
-    request = models.TextField()
-    response = models.TextField()
-    datetime = models.DateTimeField(auto_now_add=True)
+class AssistantConversation(SuccessModel):
+    system_message = models.TextField(blank=True)
+    description = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    @property
+    def messages(self):
+        return self.assistant_messages.all().order_by('created_at')
+    
+    @property
+    def latest_message(self):
+        return self.assistant_messages.order_by('-created_at').first()
+    
+    @property
+    def preview_text(self):
+        first_user_message = self.assistant_messages.filter(role='user').first()
+        return first_user_message.content[:50] + '...' if first_user_message and len(first_user_message.content) > 50 else first_user_message.content if first_user_message else 'Empty conversation'
+
+class AssistantMessage(SuccessModel):
+    ROLE_CHOICES = [
+        ('user', 'User'),
+        ('assistant', 'Assistant'),
+    ]
+    
+    conversation = models.ForeignKey(
+        AssistantConversation,
+        related_name='assistant_messages',
+        on_delete=models.CASCADE
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    content = models.TextField()
+    
+    class Meta:
+        ordering = ['created_at']
+
 
 class ScratchPad(SingletonModel):
     body = models.TextField()

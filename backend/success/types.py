@@ -127,13 +127,25 @@ class PromptTemplate:
     system_message: auto
     request_template: auto
 
-@strawberry.django.type(models.AssistantAnswer)
-class AssistantAnswer:
+@strawberry.django.type(models.AssistantConversation)
+class AssistantConversation:
     id: auto
-    system: auto
-    request: auto
-    response: auto
-    datetime: auto
+    system_message: auto
+    description: auto
+    created_at: auto
+    updated_at: auto
+    messages: List['AssistantMessage']
+    latest_message: Optional['AssistantMessage']
+    preview_text: str
+
+@strawberry.django.type(models.AssistantMessage)
+class AssistantMessage:
+    id: auto
+    role: auto
+    content: auto
+    created_at: auto
+    conversation: AssistantConversation
+
 
 @strawberry.django.type(models.ScratchPad)
 class ScratchPad:

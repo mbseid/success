@@ -4,7 +4,7 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List, Union, Optional, Dict
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantAnswer, ScratchPad, ProjectPartialInput, PromptTemplate, PromptTemplateInput, SystemLog, SearchOrder
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantConversation, AssistantMessage, ScratchPad, ProjectPartialInput, PromptTemplate, PromptTemplateInput, SystemLog, SearchOrder
 from . import models
 from . import assistant
 import uuid
@@ -23,8 +23,8 @@ class Query:
     promptTemplate: PromptTemplate = strawberry_django.field()
     promptTemplates: List[PromptTemplate] = strawberry_django.field()
 
-    assistantAnswer: AssistantAnswer = strawberry_django.field()
-    assistantAnswers: List[AssistantAnswer] = strawberry_django.field()
+    assistantConversation: AssistantConversation = strawberry_django.field()
+    assistantConversations: List[AssistantConversation] = strawberry_django.field()
     
     system_logs: List[SystemLog] = strawberry_django.field()
 
@@ -81,11 +81,16 @@ class Mutation:
         return project
 
     @strawberry_django.mutation
-    def assistant(self, system: str, request: str, promptID: Optional[uuid.UUID] = None) -> AssistantAnswer:
+    def startConversation(self, system: str, request: str, promptID: Optional[uuid.UUID] = None) -> AssistantConversation:
         if promptID:
             prompt = models.PromptTemplate.objects.get(pk=promptID)
             system = prompt.system_message
-        return assistant.predict(system, request)
+        return assistant.start_conversation(system, request)
+    
+    @strawberry_django.mutation
+    def sendMessage(self, conversationID: uuid.UUID, request: str) -> AssistantMessage:
+        conversation = models.AssistantConversation.objects.get(pk=conversationID)
+        return assistant.send_message(conversation, request)
 
     @strawberry_django.mutation
     def updateScratchPad(self, body: str) -> ScratchPad:

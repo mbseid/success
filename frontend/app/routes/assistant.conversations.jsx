@@ -4,7 +4,6 @@ import { NoSsr } from '@mui/base';
 import dayjs from 'dayjs';
 import { useTheme } from '@mui/material/styles';
 
-
 import Page from '~/components/Page';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
@@ -17,39 +16,34 @@ import ListItemButton from '@mui/material/ListItemButton';
 import Tooltip from '@mui/material/Tooltip';
 import { gql, graphQLClient } from '~/graphql';
 import { Stack } from "@mui/material";
-import { markDownToHtml } from '~/utils/markdown';
-import MarkdownBox from '~/components/MarkdownBox';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-
-const AssistantAnswerQuery = gql`
-query GetAnswer{
-    assistantAnswers{
+const ConversationsQuery = gql`
+query GetConversations{
+    assistantConversations{
         id
-        request
-        datetime
+        systemMessage
+        description
+        createdAt
+        previewText
     }
 }
 `
 
 export async function loader({request, params}){
     const { data } = await graphQLClient.query({
-        query: AssistantAnswerQuery,
-        variables: {
-          answerId: params.answerId
-        }
+        query: ConversationsQuery
     });
     return json(data);
 }
 
-export default function AssistantAnswer(){
-    const { assistantAnswers } = useLoaderData();
+export default function AssistantConversations(){
+    const { assistantConversations } = useLoaderData();
 
     return (
-        <Page title="Assistant Response">
+        <Page title="AI Conversations">
             <Grid container>
                 <Grid item xs={12} >
-                    <Typography variant="h5" className="header-message">Assistant Answers</Typography>
+                    <Typography variant="h5" className="header-message">AI Conversations</Typography>
                 </Grid>
             </Grid>
             <Grid container component={Paper}>
@@ -59,23 +53,29 @@ export default function AssistantAnswer(){
                     </Grid>
                     <Divider />
                     <List>
-                        {assistantAnswers.reverse().map(({id, request, datetime}) => {
+                        {assistantConversations.reverse().map(({id, previewText, createdAt, systemMessage}) => {
                             return (
                                 <ListItemButton key={id}
                                                 divider={true}
                                                 component={Link}
-                                                to={`/assistant/answers/${id}`}>
+                                                to={`/assistant/conversations/${id}`}>
                                     <Stack>
-                                        <Tooltip title={request}>
+                                        <Tooltip title={previewText}>
                                             <Typography variant="body2" gutterBottom>
-                                                {request.slice(0, 20)}
+                                                {previewText.slice(0, 30)}
+                                                {previewText.length > 30 ? '...' : ''}
                                             </Typography>
                                         </Tooltip>
                                         <NoSsr>
                                             <Typography variant="body2" color="text.secondary">
-                                                {dayjs(datetime).format("MM/DD/YYYY")}
+                                                {dayjs(createdAt).format("MM/DD/YYYY")}
                                             </Typography>
                                         </NoSsr>
+                                        {systemMessage && (
+                                            <Typography variant="caption" color="text.secondary">
+                                                System: {systemMessage.slice(0, 20)}...
+                                            </Typography>
+                                        )}
                                     </Stack>
                                 </ListItemButton>
                             );

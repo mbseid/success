@@ -1,20 +1,81 @@
 from langchain_openai.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
-from .models import AssistantAnswer
+from langchain.schema import HumanMessage, SystemMessage, AIMessage
+from .models import AssistantConversation, AssistantMessage
 
 llm = ChatOpenAI(model_name="gpt-4o")
 copy_editor_llm = ChatOpenAI(model_name="gpt-4o")
 
-def predict(system, request):
+def start_conversation(system, request):
+    """
+    Start a new conversation with initial system message and user request
+    """
+    # Create the conversation
+    conversation = AssistantConversation(
+        system_message=system,
+        description=''
+    )
+    conversation.save()
+    
+    # Create user message
+    user_message = AssistantMessage(
+        conversation=conversation,
+        role='user',
+        content=request
+    )
+    user_message.save()
+    
+    # Generate AI response
     messages = [SystemMessage(content=system), HumanMessage(content=request)]
     response = llm.predict_messages(messages)
-    answer = AssistantAnswer(
-        system=system,
-        request=request,
-        response=response.content
+    
+    # Create assistant message
+    assistant_message = AssistantMessage(
+        conversation=conversation,
+        role='assistant',
+        content=response.content
     )
-    answer.save()
-    return answer
+    assistant_message.save()
+    
+    return conversation
+
+def send_message(conversation, request):
+    """
+    Send a new message in an existing conversation
+    """
+    # Build conversation history for context
+    messages = []
+    if conversation.system_message:
+        messages.append(SystemMessage(content=conversation.system_message))
+    
+    # Add all previous messages
+    for msg in conversation.messages:
+        if msg.role == 'user':
+            messages.append(HumanMessage(content=msg.content))
+        else:
+            messages.append(AIMessage(content=msg.content))
+    
+    # Add the new user message
+    user_message = AssistantMessage(
+        conversation=conversation,
+        role='user',
+        content=request
+    )
+    user_message.save()
+    messages.append(HumanMessage(content=request))
+    
+    # Generate AI response
+    response = llm.predict_messages(messages)
+    
+    # Create assistant message
+    assistant_message = AssistantMessage(
+        conversation=conversation,
+        role='assistant',
+        content=response.content
+    )
+    assistant_message.save()
+    
+    return assistant_message
+
 
 def copy_edit(text, editor_type="spotify"):
     if editor_type == "simple":
