@@ -5,6 +5,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
 import LinkIcon from '@mui/icons-material/Link';
 import AssistantIcon from '@mui/icons-material/Assistant';
+import EditIcon from '@mui/icons-material/Edit';
 
 // ----------------------------------------------------------------------
 
@@ -33,6 +34,12 @@ const navConfig = [
     title: 'Assistant',
     path: '/assistant',
     icon: <AssistantIcon />,
+    endMatch: false
+  },
+  {
+    title: 'Copy Editor',
+    path: '/copy-editor',
+    icon: <EditIcon />,
     endMatch: false
   },
 ];
