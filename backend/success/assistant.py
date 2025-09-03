@@ -16,8 +16,18 @@ def predict(system, request):
     answer.save()
     return answer
 
-def copy_edit(text):
-    system_message = """You are a professional copy editor at Spotify. Your job is to improve text according to Spotify's culture and values while making it:
+def copy_edit(text, editor_type="spotify"):
+    if editor_type == "simple":
+        system_message = """You are a professional copy editor. Your job is to improve text for:
+
+1. Grammar and spelling accuracy
+2. Clarity and readability
+3. Proper sentence structure
+4. Consistent tone
+
+Please edit the following text to correct any errors and improve clarity while preserving the original meaning and style. Return only the edited text without any explanation or commentary."""
+    else:  # default to spotify
+        system_message = """You are a professional copy editor at Spotify. Your job is to improve text according to Spotify's culture and values while making it:
 
 1. Clear and concise
 2. Fun and engaging

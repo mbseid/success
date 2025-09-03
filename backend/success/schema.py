@@ -102,8 +102,8 @@ class Mutation:
         return link
 
     @strawberry_django.mutation
-    def copyEdit(self, text: str) -> str:
-        return assistant.copy_edit(text)
+    def copyEdit(self, text: str, editorType: Optional[str] = "spotify") -> str:
+        return assistant.copy_edit(text, editorType)
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

@@ -1,8 +1,9 @@
 import Grid from '@mui/material/Unstable_Grid2';
-import { TextField, Button, Paper, Typography, Box } from '@mui/material';
+import { TextField, Button, Paper, Typography, Box, FormControl, InputLabel, Select, MenuItem, IconButton, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Page from '~/components/Page';
 import EditIcon from '@mui/icons-material/Edit';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import { useFormik } from 'formik';
 import { useState } from 'react';
@@ -13,19 +14,20 @@ import { useFetcher } from '@remix-run/react';
 import { jsonToFormData, formDataToJson } from '~/utils/formUtils';
 
 const CopyEditMutation = gql`
-mutation CopyEdit($text: String!){
-    copyEdit(text: $text)
+mutation CopyEdit($text: String!, $editorType: String){
+    copyEdit(text: $text, editorType: $editorType)
 }
 `
 
 export async function action({ request }){
     const formData = await request.formData();
-    const { text } = formDataToJson(formData)
+    const { text, editorType } = formDataToJson(formData)
     
     const { data } = await graphQLClient.query({
         query: CopyEditMutation,
         variables: {
-            text
+            text,
+            editorType
         }
     });
 
@@ -41,7 +43,8 @@ export default function CopyEditor(){
 
     const formik = useFormik({
         initialValues: {
-            text: ''
+            text: '',
+            editorType: 'spotify'
         },
         onSubmit: (values) => {
             submit(values)
@@ -62,7 +65,7 @@ export default function CopyEditor(){
 
     return (
         <Page title="Copy Editor">
-            <Grid container spacing={3}>
+            <Grid container spacing={3} sx={{ p: { xs: 2, sm: 3 } }}>
                 <Grid xs={12}>
                     <Box display="flex" alignItems="center" gap={2} mb={3}>
                         <EditIcon color="primary" fontSize="large" />
@@ -71,7 +74,7 @@ export default function CopyEditor(){
                         </Typography>
                     </Box>
                     <Typography variant="body1" color="text.secondary" paragraph>
-                        Improve your text to match Spotify's culture and values. The AI will make your content clear, concise, fun, and engaging while maintaining a college reading level.
+                        Use AI to improve your text with different editing styles. Choose between Spotify's culture-focused editing or simple grammar and clarity improvements.
                     </Typography>
                 </Grid>
 
@@ -80,10 +83,33 @@ export default function CopyEditor(){
                         <Typography variant="h6" gutterBottom>
                             Original Text
                         </Typography>
+                        <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
+                            <FormControl fullWidth>
+                                <InputLabel>Editor Type</InputLabel>
+                                <Select
+                                    name="editorType"
+                                    value={formik.values.editorType}
+                                    onChange={formik.handleChange}
+                                    label="Editor Type"
+                                >
+                                    <MenuItem value="spotify">Spotify Editor</MenuItem>
+                                    <MenuItem value="simple">Simple Editor</MenuItem>
+                                </Select>
+                            </FormControl>
+                            <Tooltip title={
+                                formik.values.editorType === 'spotify' 
+                                    ? "Improve your text to match Spotify's culture and values. The AI will make your content clear, concise, fun, and engaging while maintaining a college reading level."
+                                    : "Improve your text for grammar, spelling, clarity, and readability. The AI will maintain your original style while fixing errors and enhancing clarity."
+                            }>
+                                <IconButton>
+                                    <HelpOutlineIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
                         <TextField 
                             fullWidth
                             multiline
-                            minRows={12}
+                            minRows={10}
                             name='text'
                             placeholder="Enter your text here for editing..."
                             value={formik.values.text}
