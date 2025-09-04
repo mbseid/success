@@ -125,38 +125,18 @@ class Mutation:
     updateCalendarSettings: List[CalendarSettings] = mutations.update(CalendarSettingsInput)
     
     @strawberry_django.mutation
-    def startGoogleOAuth(self, input: GoogleOAuthInput) -> str:
-        """Start Google OAuth flow and return authorization URL"""
+    def validateGoogleCredentials(self, input: GoogleOAuthInput) -> GoogleCredentials:
+        """Validate Google user credentials and store them"""
         from .calendar_service import CalendarService
         import json
         
         calendar_service = CalendarService()
         credentials_json = json.loads(input.credentials_json)
         
-        auth_url = calendar_service.start_oauth_flow(
-            input.account_id,
-            input.account_name, 
-            credentials_json
-        )
-        return auth_url
-    
-    @strawberry_django.mutation
-    def completeGoogleOAuth(self, input: GoogleOAuthInput) -> GoogleCredentials:
-        """Complete Google OAuth flow with authorization code"""
-        from .calendar_service import CalendarService
-        import json
-        
-        if not input.auth_code:
-            raise ValueError("Authorization code is required")
-        
-        calendar_service = CalendarService()
-        credentials_json = json.loads(input.credentials_json)
-        
-        google_creds = calendar_service.complete_oauth_flow(
+        google_creds = calendar_service.validate_and_store_credentials(
             input.account_id,
             input.account_name,
-            credentials_json,
-            input.auth_code
+            credentials_json
         )
         return google_creds
     
@@ -169,6 +149,14 @@ class Mutation:
             return True
         except models.GoogleCredentials.DoesNotExist:
             return False
+    
+    @strawberry_django.mutation
+    def toggleCalendarSetting(self, calendarId: uuid.UUID, isEnabled: bool) -> CalendarSettings:
+        """Toggle calendar enabled/disabled state"""
+        calendar_setting = models.CalendarSettings.objects.get(pk=calendarId)
+        calendar_setting.is_enabled = isEnabled
+        calendar_setting.save()
+        return calendar_setting
     
     @strawberry_django.mutation
     def sendTestCalendarEmail(self) -> bool:

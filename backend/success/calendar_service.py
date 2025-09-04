@@ -58,35 +58,75 @@ class CalendarService:
         decrypted = self.fernet.decrypt(encrypted_credentials.encode())
         return json.loads(decrypted.decode())
     
-    def start_oauth_flow(self, account_id: str, account_name: str, 
-                        credentials_json: dict) -> str:
+    def validate_and_store_credentials(self, account_id: str, account_name: str, 
+                                     credentials_json: dict) -> GoogleCredentials:
         """
-        Start OAuth flow and return authorization URL
+        Validate user account credentials and store them
         
         Args:
             account_id: Unique identifier for the account
             account_name: Display name for the account
-            credentials_json: Google OAuth client credentials
+            credentials_json: Google user account credentials JSON (from credentials.json file)
             
         Returns:
-            Authorization URL for user to visit
+            GoogleCredentials object if successful
+            
+        Raises:
+            ValueError: If credentials are invalid or missing required fields
         """
-        flow = InstalledAppFlow.from_client_config(
-            credentials_json, 
-            SCOPES,
-            redirect_uri='urn:ietf:wg:oauth:2.0:oob'  # For manual flow
-        )
-        
-        auth_url, _ = flow.authorization_url(
-            access_type='offline',
-            include_granted_scopes='true',
-            prompt='consent select_account'
-        )
-        
-        # Store the flow state temporarily (in production, use Redis or database)
-        # For now, we'll handle this in the complete_oauth_flow method
-        
-        return auth_url
+        try:
+            # Validate that we have the required fields for user credentials
+            required_fields = ['client_id', 'client_secret', 'refresh_token']
+            for field in required_fields:
+                if field not in credentials_json:
+                    raise ValueError(f"Missing required field: {field}")
+            
+            # Create credentials object
+            credentials = Credentials(
+                token=credentials_json.get('token'),
+                refresh_token=credentials_json['refresh_token'],
+                token_uri=credentials_json.get('token_uri', 'https://oauth2.googleapis.com/token'),
+                client_id=credentials_json['client_id'],
+                client_secret=credentials_json['client_secret'],
+                scopes=SCOPES
+            )
+            
+            # Test the credentials by making a simple API call
+            service = build('calendar', 'v3', credentials=credentials)
+            # Try to list calendars to verify access
+            calendar_list = service.calendarList().list().execute()
+            
+            # If we get here, credentials are valid
+            # Store credentials in our format
+            cred_dict = {
+                'token': credentials.token,
+                'refresh_token': credentials.refresh_token,
+                'token_uri': credentials.token_uri,
+                'client_id': credentials.client_id,
+                'client_secret': credentials.client_secret,
+                'scopes': credentials.scopes or SCOPES
+            }
+            
+            encrypted_creds = self.encrypt_credentials(cred_dict)
+            
+            # Save to database
+            google_creds, created = GoogleCredentials.objects.update_or_create(
+                account_id=account_id,
+                defaults={
+                    'account_name': account_name,
+                    'encrypted_credentials': encrypted_creds,
+                    'is_active': True,
+                    'last_used': timezone.now()
+                }
+            )
+            
+            # Auto-discover and save calendars
+            self._discover_calendars_from_service(google_creds, service)
+            
+            return google_creds
+            
+        except Exception as e:
+            raise ValueError(f"Invalid credentials or unable to access Google Calendar: {str(e)}")
     
     def complete_oauth_flow(self, account_id: str, account_name: str, 
                           credentials_json: dict, auth_code: str) -> GoogleCredentials:
@@ -144,6 +184,26 @@ class CalendarService:
         """Discover and save available calendars for an account"""
         try:
             service = self._get_calendar_service(google_creds)
+            calendar_list = service.calendarList().list().execute()
+            
+            for calendar_item in calendar_list.get('items', []):
+                calendar_id = calendar_item['id']
+                calendar_name = calendar_item.get('summary', calendar_id)
+                
+                CalendarSettings.objects.update_or_create(
+                    google_credentials=google_creds,
+                    calendar_id=calendar_id,
+                    defaults={
+                        'calendar_name': calendar_name,
+                        'is_enabled': True
+                    }
+                )
+        except Exception as e:
+            print(f"Error discovering calendars for {google_creds.account_name}: {e}")
+    
+    def _discover_calendars_from_service(self, google_creds: GoogleCredentials, service):
+        """Discover and save available calendars for an account using existing service"""
+        try:
             calendar_list = service.calendarList().list().execute()
             
             for calendar_item in calendar_list.get('items', []):

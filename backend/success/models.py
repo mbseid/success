@@ -1,6 +1,7 @@
 from typing import List
 import uuid
 import math
+from datetime import time
 
 from django.utils.translation import gettext_lazy as _
 from django.db import models, connection, transaction
@@ -219,7 +220,7 @@ class NotificationSettings(SingletonModel):
     """Global notification preferences"""
     daily_email_enabled = models.BooleanField(default=False)
     email_address = models.EmailField(blank=True)
-    email_time = models.TimeField(default='07:00')  # 7 AM default
+    email_time = models.TimeField(default=time(7, 0))  # 7 AM default
     timezone = models.CharField(max_length=50, default='America/New_York')
     
     class Meta:

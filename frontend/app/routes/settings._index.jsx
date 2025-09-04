@@ -1,6 +1,6 @@
 import { useLoaderData, useFetcher } from '@remix-run/react';
 import { json } from '@remix-run/node';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // material
 import {
@@ -86,15 +86,9 @@ const UPDATE_NOTIFICATION_SETTINGS = gql`
   }
 `;
 
-const START_GOOGLE_OAUTH = gql`
-  mutation StartGoogleOAuth($input: GoogleOAuthInput!) {
-    startGoogleOAuth(input: $input)
-  }
-`;
-
-const COMPLETE_GOOGLE_OAUTH = gql`
-  mutation CompleteGoogleOAuth($input: GoogleOAuthInput!) {
-    completeGoogleOAuth(input: $input) {
+const VALIDATE_GOOGLE_CREDENTIALS = gql`
+  mutation ValidateGoogleCredentials($input: GoogleOAuthInput!) {
+    validateGoogleCredentials(input: $input) {
       id
       accountId
       accountName
@@ -105,6 +99,16 @@ const COMPLETE_GOOGLE_OAUTH = gql`
 const REMOVE_GOOGLE_CREDENTIALS = gql`
   mutation RemoveGoogleCredentials($credentialsId: UUID!) {
     removeGoogleCredentials(credentialsId: $credentialsId)
+  }
+`;
+
+const TOGGLE_CALENDAR_SETTING = gql`
+  mutation ToggleCalendarSetting($calendarId: UUID!, $isEnabled: Boolean!) {
+    toggleCalendarSetting(calendarId: $calendarId, isEnabled: $isEnabled) {
+      id
+      isEnabled
+      calendarName
+    }
   }
 `;
 
@@ -129,35 +133,24 @@ export async function action({ request }) {
     switch (intent) {
       case 'updateNotifications': {
         const data = JSON.parse(formData.get('data'));
-        const result = await makeGraphQLRequest(UPDATE_NOTIFICATION_SETTINGS, { data });
-        return json({ success: true, data: result.data.updateNotificationSettings });
+        const { data: result } = await graphQLClient.mutate({
+          mutation: UPDATE_NOTIFICATION_SETTINGS,
+          variables: { data }
+        });
+        return json({ success: true, data: result.updateNotificationSettings[0] });
       }
 
-      case 'startOAuth': {
+      case 'validateCredentials': {
         const input = {
           accountId: formData.get('accountId'),
           accountName: formData.get('accountName'),
           credentialsJson: formData.get('credentialsJson')
         };
         const { data: result } = await graphQLClient.mutate({
-          mutation: START_GOOGLE_OAUTH,
+          mutation: VALIDATE_GOOGLE_CREDENTIALS,
           variables: { input }
         });
-        return json({ success: true, authUrl: result.startGoogleOAuth });
-      }
-
-      case 'completeOAuth': {
-        const input = {
-          accountId: formData.get('accountId'),
-          accountName: formData.get('accountName'),
-          credentialsJson: formData.get('credentialsJson'),
-          authCode: formData.get('authCode')
-        };
-        const { data: result } = await graphQLClient.mutate({
-          mutation: COMPLETE_GOOGLE_OAUTH,
-          variables: { input }
-        });
-        return json({ success: true, data: result.completeGoogleOAuth });
+        return json({ success: true, data: result.validateGoogleCredentials });
       }
 
       case 'removeCredentials': {
@@ -167,6 +160,16 @@ export async function action({ request }) {
           variables: { credentialsId }
         });
         return json({ success: true, removed: result.removeGoogleCredentials });
+      }
+
+      case 'toggleCalendar': {
+        const calendarId = formData.get('calendarId');
+        const isEnabled = formData.get('isEnabled') === 'true';
+        const { data: result } = await graphQLClient.mutate({
+          mutation: TOGGLE_CALENDAR_SETTING,
+          variables: { calendarId, isEnabled }
+        });
+        return json({ success: true, data: result.toggleCalendarSetting });
       }
 
       case 'sendTestEmail': {
@@ -189,23 +192,41 @@ export default function SettingsPage() {
   const data = useLoaderData();
   const fetcher = useFetcher();
   
-  const [oauthDialog, setOauthDialog] = useState(false);
-  const [oauthStep, setOauthStep] = useState(1); // 1: credentials, 2: auth code
-  const [oauthData, setOauthData] = useState({
+  const [credentialsDialog, setCredentialsDialog] = useState(false);
+  const [credentialsData, setCredentialsData] = useState({
     accountId: '',
     accountName: '',
-    credentialsJson: '',
-    authCode: ''
+    credentialsJson: ''
   });
-  const [oauthUrl, setOauthUrl] = useState('');
+  const [validationError, setValidationError] = useState('');
 
   const notificationSettings = data.notificationSettings;
   const googleCredentials = data.googleCredentials || [];
   const calendarSettings = data.calendarSettings || [];
 
-  const handleNotificationChange = (field, value) => {
-    const updateData = { ...notificationSettings };
-    updateData[field] = value;
+  // Local state for notification form
+  const [localNotificationSettings, setLocalNotificationSettings] = useState({
+    dailyEmailEnabled: notificationSettings.dailyEmailEnabled,
+    emailAddress: notificationSettings.emailAddress || '',
+    emailTime: notificationSettings.emailTime || '07:00',
+    timezone: notificationSettings.timezone || 'America/New_York'
+  });
+
+  // Update local state when data changes (e.g., after successful save)
+  useEffect(() => {
+    setLocalNotificationSettings({
+      dailyEmailEnabled: notificationSettings.dailyEmailEnabled,
+      emailAddress: notificationSettings.emailAddress || '',
+      emailTime: notificationSettings.emailTime || '07:00',
+      timezone: notificationSettings.timezone || 'America/New_York'
+    });
+  }, [notificationSettings]);
+
+  const handleNotificationToggle = (field, value) => {
+    // For toggles, update both local state and submit immediately
+    setLocalNotificationSettings(prev => ({ ...prev, [field]: value }));
+    
+    const updateData = { ...notificationSettings, [field]: value };
     delete updateData.id; // Remove id from update data
     
     fetcher.submit(
@@ -217,102 +238,107 @@ export default function SettingsPage() {
     );
   };
 
-  const startGoogleAuth = async () => {
-    const formData = new FormData();
-    formData.append('intent', 'startOAuth');
-    formData.append('accountId', oauthData.accountId);
-    formData.append('accountName', oauthData.accountName);
-    formData.append('credentialsJson', oauthData.credentialsJson);
-
-    try {
-      const response = await fetch('/settings', {
-        method: 'POST',
-        body: formData
-      });
-      const result = await response.json();
-      
-      if (result.success) {
-        setOauthUrl(result.authUrl);
-        setOauthStep(2);
-      } else {
-        console.error('Error starting OAuth:', result.error);
-      }
-    } catch (error) {
-      console.error('Error starting OAuth:', error);
-    }
+  const handleNotificationFieldChange = (field, value) => {
+    // For text fields, only update local state
+    setLocalNotificationSettings(prev => ({ ...prev, [field]: value }));
   };
 
-  const completeGoogleAuth = async () => {
-    const formData = new FormData();
-    formData.append('intent', 'completeOAuth');
-    formData.append('accountId', oauthData.accountId);
-    formData.append('accountName', oauthData.accountName);
-    formData.append('credentialsJson', oauthData.credentialsJson);
-    formData.append('authCode', oauthData.authCode);
-
-    try {
-      const response = await fetch('/settings', {
-        method: 'POST',
-        body: formData
-      });
-      const result = await response.json();
-      
-      if (result.success) {
-        setOauthDialog(false);
-        setOauthStep(1);
-        setOauthData({ accountId: '', accountName: '', credentialsJson: '', authCode: '' });
-        window.location.reload(); // Refresh to show new credentials
-      } else {
-        console.error('Error completing OAuth:', result.error);
-      }
-    } catch (error) {
-      console.error('Error completing OAuth:', error);
-    }
+  const saveNotificationSettings = () => {
+    // Save all notification settings
+    const updateData = { ...localNotificationSettings };
+    
+    fetcher.submit(
+      { 
+        intent: 'updateNotifications',
+        data: JSON.stringify(updateData)
+      },
+      { method: 'post' }
+    );
   };
 
-  const removeCredentials = async (credentialsId) => {
-    const formData = new FormData();
-    formData.append('intent', 'removeCredentials');
-    formData.append('credentialsId', credentialsId);
-
-    try {
-      const response = await fetch('/settings', {
-        method: 'POST',
-        body: formData
-      });
-      const result = await response.json();
-      
-      if (result.success) {
-        window.location.reload();
-      } else {
-        console.error('Error removing credentials:', result.error);
-      }
-    } catch (error) {
-      console.error('Error removing credentials:', error);
-    }
+  const validateCredentials = () => {
+    setValidationError('');
+    
+    fetcher.submit(
+      { 
+        intent: 'validateCredentials',
+        accountId: credentialsData.accountId,
+        accountName: credentialsData.accountName,
+        credentialsJson: credentialsData.credentialsJson
+      },
+      { method: 'post' }
+    );
   };
 
-  const sendTestEmail = async () => {
-    const formData = new FormData();
-    formData.append('intent', 'sendTestEmail');
-
-    try {
-      const response = await fetch('/settings', {
-        method: 'POST',
-        body: formData
-      });
-      const result = await response.json();
+  // Handle fetcher response
+  useEffect(() => {
+    if (fetcher.data && fetcher.state === 'idle') {
+      const lastSubmission = fetcher.formData?.get('intent');
       
-      if (result.success) {
-        alert('Test email sent successfully!');
-      } else {
-        console.error('Error sending test email:', result.error);
-        alert('Error sending test email');
+      if (fetcher.data.success) {
+        switch (lastSubmission) {
+          case 'validateCredentials':
+            setCredentialsDialog(false);
+            setCredentialsData({ accountId: '', accountName: '', credentialsJson: '' });
+            setValidationError('');
+            window.location.reload(); // Refresh to show new credentials
+            break;
+          case 'removeCredentials':
+            window.location.reload();
+            break;
+          case 'toggleCalendar':
+            // Calendar toggle handled - the UI will update automatically
+            break;
+          case 'updateNotifications':
+            // Settings saved successfully - no action needed, state will update
+            break;
+          case 'sendTestEmail':
+            alert('Test email sent successfully!');
+            break;
+        }
+      } else if (fetcher.data.error) {
+        switch (lastSubmission) {
+          case 'validateCredentials':
+            setValidationError(fetcher.data.error);
+            break;
+          case 'sendTestEmail':
+            alert('Error sending test email');
+            break;
+          default:
+            console.error('Error:', fetcher.data.error);
+        }
       }
-    } catch (error) {
-      console.error('Error sending test email:', error);
-      alert('Error sending test email');
     }
+  }, [fetcher.data, fetcher.state]);
+
+  const removeCredentials = (credentialsId) => {
+    fetcher.submit(
+      { 
+        intent: 'removeCredentials',
+        credentialsId: credentialsId
+      },
+      { method: 'post' }
+    );
+  };
+
+  const toggleCalendarSetting = (calendarId, isEnabled) => {
+    fetcher.submit(
+      { 
+        intent: 'toggleCalendar',
+        calendarId: calendarId,
+        isEnabled: isEnabled.toString()
+      },
+      { method: 'post' }
+    );
+  };
+
+  const sendTestEmail = () => {
+    fetcher.submit(
+      { 
+        intent: 'sendTestEmail'
+      },
+      { method: 'post' }
+    );
   };
 
   return (
@@ -373,7 +399,7 @@ export default function SettingsPage() {
               <Button
                 variant="contained"
                 startIcon={<GoogleIcon />}
-                onClick={() => setOauthDialog(true)}
+                onClick={() => setCredentialsDialog(true)}
                 sx={{ mt: 2 }}
               >
                 Connect Google Account
@@ -404,8 +430,7 @@ export default function SettingsPage() {
                         <Switch
                           checked={setting.isEnabled}
                           onChange={(e) => {
-                            // Handle calendar enable/disable
-                            // This would need additional GraphQL mutation
+                            toggleCalendarSetting(setting.id, e.target.checked);
                           }}
                         />
                       </ListItemSecondaryAction>
@@ -428,20 +453,20 @@ export default function SettingsPage() {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={notificationSettings.dailyEmailEnabled}
-                      onChange={(e) => handleNotificationChange('dailyEmailEnabled', e.target.checked)}
+                      checked={localNotificationSettings.dailyEmailEnabled}
+                      onChange={(e) => handleNotificationToggle('dailyEmailEnabled', e.target.checked)}
                     />
                   }
                   label="Daily Calendar Email"
                 />
 
-                {notificationSettings.dailyEmailEnabled && (
+                {localNotificationSettings.dailyEmailEnabled && (
                   <>
                     <TextField
                       label="Email Address"
                       type="email"
-                      value={notificationSettings.emailAddress || ''}
-                      onChange={(e) => handleNotificationChange('emailAddress', e.target.value)}
+                      value={localNotificationSettings.emailAddress}
+                      onChange={(e) => handleNotificationFieldChange('emailAddress', e.target.value)}
                       fullWidth
                       helperText="Email address to receive daily calendar summaries"
                     />
@@ -449,8 +474,8 @@ export default function SettingsPage() {
                     <TextField
                       label="Email Time"
                       type="time"
-                      value={notificationSettings.emailTime || '07:00'}
-                      onChange={(e) => handleNotificationChange('emailTime', e.target.value)}
+                      value={localNotificationSettings.emailTime}
+                      onChange={(e) => handleNotificationFieldChange('emailTime', e.target.value)}
                       InputLabelProps={{
                         shrink: true,
                       }}
@@ -459,20 +484,30 @@ export default function SettingsPage() {
 
                     <TextField
                       label="Timezone"
-                      value={notificationSettings.timezone || 'America/New_York'}
-                      onChange={(e) => handleNotificationChange('timezone', e.target.value)}
+                      value={localNotificationSettings.timezone}
+                      onChange={(e) => handleNotificationFieldChange('timezone', e.target.value)}
                       fullWidth
                       helperText="Your local timezone for calendar events"
                     />
 
-                    <Button
-                      variant="outlined"
-                      startIcon={<EmailIcon />}
-                      onClick={sendTestEmail}
-                      sx={{ alignSelf: 'flex-start' }}
-                    >
-                      Send Test Email
-                    </Button>
+                    <Stack direction="row" spacing={2} sx={{ alignSelf: 'flex-start' }}>
+                      <Button
+                        variant="contained"
+                        onClick={saveNotificationSettings}
+                        disabled={fetcher.state !== 'idle'}
+                      >
+                        {fetcher.state !== 'idle' ? 'Saving...' : 'Save Settings'}
+                      </Button>
+                      
+                      <Button
+                        variant="outlined"
+                        startIcon={<EmailIcon />}
+                        onClick={sendTestEmail}
+                        disabled={fetcher.state !== 'idle'}
+                      >
+                        {fetcher.state !== 'idle' ? 'Sending...' : 'Send Test Email'}
+                      </Button>
+                    </Stack>
                   </>
                 )}
               </Stack>
@@ -480,79 +515,57 @@ export default function SettingsPage() {
           </Card>
         </Stack>
 
-        {/* Google OAuth Dialog */}
-        <Dialog open={oauthDialog} onClose={() => setOauthDialog(false)} maxWidth="sm" fullWidth>
+        {/* Google Credentials Dialog */}
+        <Dialog open={credentialsDialog} onClose={() => setCredentialsDialog(false)} maxWidth="sm" fullWidth>
           <DialogTitle>Connect Google Account</DialogTitle>
           <DialogContent>
-            {oauthStep === 1 ? (
-              <Stack spacing={3} sx={{ mt: 1 }}>
-                <Alert severity="info">
-                  You'll need Google Calendar API credentials. Create them in the Google Cloud Console.
+            <Stack spacing={3} sx={{ mt: 1 }}>
+              <Alert severity="info">
+                Paste your Google Calendar API credentials JSON. This will be validated and stored securely.
+              </Alert>
+              
+              {validationError && (
+                <Alert severity="error">
+                  {validationError}
                 </Alert>
-                
-                <TextField
-                  label="Account ID"
-                  value={oauthData.accountId}
-                  onChange={(e) => setOauthData({...oauthData, accountId: e.target.value})}
-                  fullWidth
-                  helperText="Unique identifier (e.g., 'primary', 'work', 'personal')"
-                />
+              )}
+              
+              <TextField
+                label="Account ID"
+                value={credentialsData.accountId}
+                onChange={(e) => setCredentialsData({...credentialsData, accountId: e.target.value})}
+                fullWidth
+                helperText="Unique identifier (e.g., 'primary', 'work', 'personal')"
+              />
 
-                <TextField
-                  label="Account Name"
-                  value={oauthData.accountName}
-                  onChange={(e) => setOauthData({...oauthData, accountName: e.target.value})}
-                  fullWidth
-                  helperText="Display name for this account"
-                />
+              <TextField
+                label="Account Name"
+                value={credentialsData.accountName}
+                onChange={(e) => setCredentialsData({...credentialsData, accountName: e.target.value})}
+                fullWidth
+                helperText="Display name for this account"
+              />
 
-                <TextField
-                  label="Google Credentials JSON"
-                  value={oauthData.credentialsJson}
-                  onChange={(e) => setOauthData({...oauthData, credentialsJson: e.target.value})}
-                  multiline
-                  rows={6}
-                  fullWidth
-                  helperText="Paste the contents of your Google API credentials.json file"
-                />
-              </Stack>
-            ) : (
-              <Stack spacing={3} sx={{ mt: 1 }}>
-                <Alert severity="info">
-                  Click the link below to authorize access to your Google Calendar, then paste the authorization code.
-                </Alert>
-                
-                <Button
-                  variant="contained"
-                  href={oauthUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  fullWidth
-                >
-                  Authorize Google Access
-                </Button>
-
-                <TextField
-                  label="Authorization Code"
-                  value={oauthData.authCode}
-                  onChange={(e) => setOauthData({...oauthData, authCode: e.target.value})}
-                  fullWidth
-                  helperText="Paste the authorization code from Google"
-                />
-              </Stack>
-            )}
+              <TextField
+                label="Google Credentials JSON"
+                value={credentialsData.credentialsJson}
+                onChange={(e) => setCredentialsData({...credentialsData, credentialsJson: e.target.value})}
+                multiline
+                rows={6}
+                fullWidth
+                helperText="Paste your Google Calendar API credentials JSON (must include client_id, client_secret, and refresh_token)"
+              />
+            </Stack>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOauthDialog(false)}>Cancel</Button>
-            {oauthStep === 1 ? (
-              <Button onClick={startGoogleAuth} variant="contained">
-                Next
-              </Button>
-            ) : (
-              <Button onClick={completeGoogleAuth} variant="contained">
-                Complete Setup
-              </Button>
-            )}
+            <Button onClick={() => setCredentialsDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={validateCredentials} 
+              variant="contained"
+              disabled={fetcher.state !== 'idle'}
+            >
+              {fetcher.state !== 'idle' ? 'Validating...' : 'Validate & Save'}
+            </Button>
           </DialogActions>
         </Dialog>
       </Container>
