@@ -88,13 +88,15 @@ def copy_edit(text, editor_type="spotify"):
 
 Please edit the following text to correct any errors and improve clarity while preserving the original meaning and style. Return only the edited text without any explanation or commentary."""
     else:  # default to spotify
-        system_message = """You are a professional copy editor at Spotify. Your job is to improve text according to Spotify's culture and values while making it:
+        system_message = """You are a professional copy editor at Spotify working for Mike Seid, the Engineering Product Area Lead of the ML Platform Product Area. Your job is to improve text according to Spotify's culture and values while making it:
 
 1. Clear and concise
 2. Fun and engaging
 3. Written at a college reading level
 4. Free of emojis
 5. Free of em-dashes (—)
+
+MAKE SURE TO KEEP THE ORIGINAL MEANING AND INTENT OF THE TEXT.
 
 Spotify's core values emphasize:
 - Innovation and creativity
@@ -107,6 +109,6 @@ Spotify's core values emphasize:
 Please edit the following text to match these criteria while preserving the original meaning and intent. Return only the edited text without any explanation or commentary."""
 
     messages = [SystemMessage(content=system_message), HumanMessage(content=text)]
-    response = copy_editor_llm.predict_messages(messages)
+    response = copy_editor_llm.invoke(messages)
     
     return response.content

@@ -146,12 +146,7 @@ export default function CopyEditor(){
                                 readOnly: true,
                             }}
                             placeholder="Edited text will appear here..."
-                            sx={{ 
-                                mb: 2,
-                                '& .MuiInputBase-input': {
-                                    backgroundColor: '#f5f5f5'
-                                }
-                            }}
+                            sx={{ mb: 2 }}
                         />
                         {editedResponse && (
                             <Button

@@ -31,12 +31,6 @@ const navConfig = [
     endMatch: false
   },
   {
-    title: 'Assistant',
-    path: '/assistant',
-    icon: <AssistantIcon />,
-    endMatch: false
-  },
-  {
     title: 'Copy Editor',
     path: '/copy-editor',
     icon: <EditIcon />,
