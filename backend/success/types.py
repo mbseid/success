@@ -153,6 +153,61 @@ class ScratchPad:
     body: auto
 
 
+### Calendar and Notification Types
+
+@strawberry.django.type(models.GoogleCredentials)
+class GoogleCredentials:
+    id: auto
+    account_id: auto
+    account_name: auto
+    is_active: auto
+    last_used: auto
+    created_at: auto
+
+@strawberry.django.type(models.CalendarSettings)
+class CalendarSettings:
+    id: auto
+    calendar_id: auto
+    calendar_name: auto
+    is_enabled: auto
+    google_credentials: GoogleCredentials
+
+@strawberry.django.type(models.NotificationSettings)
+class NotificationSettings:
+    id: auto
+    daily_email_enabled: auto
+    email_address: auto
+    email_time: auto
+    timezone: auto
+
+@strawberry.django.type(models.CalendarEmailLog)
+class CalendarEmailLog:
+    id: auto
+    email_date: auto
+    sent_at: auto
+    email_address: auto
+    subject: auto
+    success: auto
+    error_message: auto
+
+@strawberry.django.input(models.NotificationSettings, partial=True)
+class NotificationSettingsInput:
+    daily_email_enabled: auto
+    email_address: auto
+    email_time: auto
+    timezone: auto
+
+@strawberry.django.input(models.CalendarSettings, partial=True)
+class CalendarSettingsInput:
+    is_enabled: auto
+
+@strawberry.input
+class GoogleOAuthInput:
+    account_id: str
+    account_name: str
+    credentials_json: str
+    auth_code: Optional[str] = None
+
 ### System Stuff
 
 @strawberry.django.order(models.SystemLog)

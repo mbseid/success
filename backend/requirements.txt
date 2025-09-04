@@ -10,3 +10,9 @@ langchain-community
 langchain-openai
 openai
 gunicorn
+google-auth
+google-auth-oauthlib
+google-api-python-client
+cryptography
+pytz
+python-dateutil

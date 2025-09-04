@@ -187,6 +187,57 @@ class AssistantMessage(SuccessModel):
 class ScratchPad(SingletonModel):
     body = models.TextField()
 
+# Calendar and Notification Models ----
+
+class GoogleCredentials(SuccessModel):
+    """Store encrypted Google OAuth credentials for calendar access"""
+    account_id = models.CharField(max_length=100, unique=True)
+    account_name = models.CharField(max_length=200)
+    encrypted_credentials = models.TextField()
+    is_active = models.BooleanField(default=True)
+    last_used = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        verbose_name_plural = "Google Credentials"
+
+class CalendarSettings(SuccessModel):
+    """Configuration for calendar integration"""
+    google_credentials = models.ForeignKey(
+        GoogleCredentials,
+        on_delete=models.CASCADE,
+        related_name='calendar_settings'
+    )
+    calendar_id = models.CharField(max_length=200)
+    calendar_name = models.CharField(max_length=200, blank=True)
+    is_enabled = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ['google_credentials', 'calendar_id']
+        verbose_name_plural = "Calendar Settings"
+
+class NotificationSettings(SingletonModel):
+    """Global notification preferences"""
+    daily_email_enabled = models.BooleanField(default=False)
+    email_address = models.EmailField(blank=True)
+    email_time = models.TimeField(default='07:00')  # 7 AM default
+    timezone = models.CharField(max_length=50, default='America/New_York')
+    
+    class Meta:
+        verbose_name_plural = "Notification Settings"
+
+class CalendarEmailLog(SuccessModel):
+    """Track sent calendar emails to prevent duplicates"""
+    email_date = models.DateField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    email_address = models.EmailField()
+    subject = models.CharField(max_length=200)
+    success = models.BooleanField(default=True)
+    error_message = models.TextField(blank=True)
+    
+    class Meta:
+        unique_together = ['email_date', 'email_address']
+        ordering = ['-sent_at']
+
 logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Link)

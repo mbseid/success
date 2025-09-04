@@ -67,10 +67,23 @@ docker compose run backend python manage.py migrate
 ## Common Development Tasks
 
 ### Adding New Features
-- Backend: Add models in `models.py`, update GraphQL schema in `schema.py`
-- Frontend: Create routes in `app/routes/`, components in `app/components/`
+- Backend: Add models in `models.py`, update GraphQL schema in `schema.py`. 
+- Frontend: Create routes in `app/routes/`, components in `app/components/`. GraphQL should only be on the server side of the frontend remix application. The Javascript should NEVER interact with the GraphQL directly, instead using remix mechnaisms to do the interaction.  
 - Database: Always run migrations after model changes
 
+### GraphQL 
+GraphQL call should look like this and ONLY happen on the server side of the frontend application:
+
+```
+const { data } = await graphQLClient.query({
+    query,
+    variables: {
+        personId: params.personId
+    }
+});
+return json({ ...data });
+
+```
 ### Working with AI Features
 - AI capabilities are in `assistant.py`
 - Uses OpenAI API and LangChain

@@ -4,7 +4,7 @@ import strawberry_django
 from strawberry_django import mutations
 
 from typing import List, Union, Optional, Dict
-from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantConversation, AssistantMessage, ScratchPad, ProjectPartialInput, PromptTemplate, PromptTemplateInput, SystemLog, SearchOrder
+from .types import Link, LinkInput, Person, PersonInput, PersonLog, PersonLogInput, Project, ProjectInput, AssistantConversation, AssistantMessage, ScratchPad, ProjectPartialInput, PromptTemplate, PromptTemplateInput, SystemLog, SearchOrder, GoogleCredentials, CalendarSettings, NotificationSettings, CalendarEmailLog, NotificationSettingsInput, CalendarSettingsInput, GoogleOAuthInput
 from . import models
 from . import assistant
 import uuid
@@ -54,6 +54,16 @@ class Query:
     @strawberry_django.field
     def scratchpad(self) -> ScratchPad:
         return models.ScratchPad.get_solo()
+    
+    # Calendar and notification queries
+    googleCredentials: List[GoogleCredentials] = strawberry_django.field()
+    calendarSettings: List[CalendarSettings] = strawberry_django.field()
+    
+    @strawberry_django.field
+    def notificationSettings(self) -> NotificationSettings:
+        return models.NotificationSettings.get_solo()
+    
+    calendarEmailLogs: List[CalendarEmailLog] = strawberry_django.field()
 
 @strawberry.type
 class Mutation:
@@ -109,6 +119,64 @@ class Mutation:
     @strawberry_django.mutation
     def copyEdit(self, text: str, editorType: Optional[str] = "spotify") -> str:
         return assistant.copy_edit(text, editorType)
+    
+    # Calendar and notification mutations
+    updateNotificationSettings: List[NotificationSettings] = mutations.update(NotificationSettingsInput)
+    updateCalendarSettings: List[CalendarSettings] = mutations.update(CalendarSettingsInput)
+    
+    @strawberry_django.mutation
+    def startGoogleOAuth(self, input: GoogleOAuthInput) -> str:
+        """Start Google OAuth flow and return authorization URL"""
+        from .calendar_service import CalendarService
+        import json
+        
+        calendar_service = CalendarService()
+        credentials_json = json.loads(input.credentials_json)
+        
+        auth_url = calendar_service.start_oauth_flow(
+            input.account_id,
+            input.account_name, 
+            credentials_json
+        )
+        return auth_url
+    
+    @strawberry_django.mutation
+    def completeGoogleOAuth(self, input: GoogleOAuthInput) -> GoogleCredentials:
+        """Complete Google OAuth flow with authorization code"""
+        from .calendar_service import CalendarService
+        import json
+        
+        if not input.auth_code:
+            raise ValueError("Authorization code is required")
+        
+        calendar_service = CalendarService()
+        credentials_json = json.loads(input.credentials_json)
+        
+        google_creds = calendar_service.complete_oauth_flow(
+            input.account_id,
+            input.account_name,
+            credentials_json,
+            input.auth_code
+        )
+        return google_creds
+    
+    @strawberry_django.mutation
+    def removeGoogleCredentials(self, credentialsId: uuid.UUID) -> bool:
+        """Remove Google credentials and associated calendar settings"""
+        try:
+            google_creds = models.GoogleCredentials.objects.get(pk=credentialsId)
+            google_creds.delete()
+            return True
+        except models.GoogleCredentials.DoesNotExist:
+            return False
+    
+    @strawberry_django.mutation
+    def sendTestCalendarEmail(self) -> bool:
+        """Send a test calendar email"""
+        from .calendar_service import CalendarService
+        
+        calendar_service = CalendarService()
+        return calendar_service.send_daily_email()
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
