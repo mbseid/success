@@ -42,6 +42,7 @@ import {
 // components
 import Page from '~/components/Page';
 import { graphQLClient, gql } from '~/graphql';
+import { fDateTime } from '~/utils/formatTime';
 
 // GraphQL queries and mutations
 const SETTINGS_QUERY = gql`
@@ -373,7 +374,7 @@ export default function SettingsPage() {
                       <ListItemText
                         primary={cred.accountName}
                         secondary={`Account ID: ${cred.accountId} • Last used: ${
-                          cred.lastUsed ? new Date(cred.lastUsed).toLocaleString() : 'Never'
+                          cred.lastUsed ? fDateTime(cred.lastUsed) : 'Never'
                         }`}
                       />
                       <ListItemSecondaryAction>

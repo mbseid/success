@@ -89,6 +89,11 @@ return json({ ...data });
 - Uses OpenAI API and LangChain
 - Templates stored in `PromptTemplate` model
 
+### Date Formatting
+- Always use date-fns utilities from `~/utils/formatTime` for consistent date rendering
+- Available functions: `fDate()`, `fDateTime()`, `fDateTimeSuffix()`, `fToNow()`
+- NEVER use `new Date().toLocaleString()` or similar native methods to avoid hydration mismatches
+
 ## Environment Variables
 Required environment variables (set in docker-compose.yaml):
 - `SECRET_KEY`: Django secret key

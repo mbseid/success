@@ -157,3 +157,49 @@ spec:
   resources:
     requests:
       storage: 100Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: success-daily-email
+  labels:
+    app: success-daily-email
+spec:
+  schedule: "0 7 * * *"  # Run daily at 7:00 AM UTC
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: daily-email
+            image: ghcr.io/mbseid/success-backend:main
+            imagePullPolicy: Always
+            command:
+            - python
+            - manage.py
+            - send_daily_calendar_email
+            env:
+              - name: POSTGRES_NAME
+                value: 'success'
+              - name: POSTGRES_USER
+                value: 'success'
+              - name: POSTGRES_HOST
+                value: 'postgres'
+              - name: POSTGRES_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: success-secrets
+                    key: postgres-password
+              - name: SECRET_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: success-secrets
+                    key: secret-key
+              - name: OPENAI_API_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: success-secrets
+                    key: open-ai-api-key
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
