@@ -21,12 +21,14 @@
     "@remix-run/node": "^1.16.1",
     "@remix-run/react": "^1.16.1",
     "@remix-run/serve": "^1.16.1",
+    "@types/ws": "^8.18.1",
     "change-case": "^4.1.2",
     "css-mediaquery": "^0.1.2",
     "date-fns": "^2.28.0",
     "dayjs": "^1.11.9",
     "formik": "^2.4.0",
     "graphql": "^16.6.0",
+    "graphql-ws": "^5.16.2",
     "isbot": "^3.6.8",
     "lodash.debounce": "^4.0.8",
     "lodash.merge": "^4.6.2",
@@ -40,6 +42,7 @@
     "simplebar": "^5.3.8",
     "simplebar-react": "^2.4.1",
     "ua-parser-js": "^1.0.35",
+    "ws": "^8.18.3",
     "yup": "^1.2.0"
   },
   "devDependencies": {

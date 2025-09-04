@@ -31,6 +31,7 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "backend localhost").split()
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'strawberry.django',
     'ordered_model',
     'solo',
@@ -73,6 +75,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'success.wsgi.application'
+ASGI_APPLICATION = 'success.asgi.application'
 
 
 # Database

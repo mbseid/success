@@ -3,10 +3,10 @@ import { useLoaderData, Link, useFetcher } from "@remix-run/react";
 import { NoSsr } from '@mui/base';
 import dayjs from 'dayjs';
 import { useTheme } from '@mui/material/styles';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useFormik } from 'formik';
-
 import Page from '~/components/Page';
+import StreamingResponse from '~/components/StreamingResponse';
 import { 
     Paper, 
     Card, 
@@ -60,13 +60,14 @@ query GetConversation($conversationId: ID!){
 
 const SendMessageMutation = gql`
 mutation SendMessage($conversationId: UUID!, $request: String!){
-    sendMessage(conversationID: $conversationId, request: $request){
+    sendMessageStreaming(conversationID: $conversationId, request: $request){
         id
         content
         createdAt
     }
 }
 `
+
 
 export async function action({ request, params }) {
     const formData = await request.formData();
@@ -80,8 +81,14 @@ export async function action({ request, params }) {
         }
     });
 
-    // Redirect to refresh the page with the new message
-    return redirect(`/assistant/conversations/${params.conversationId}`);
+    // Return the message ID and user message for streaming
+    return json({ 
+        messageId: data.sendMessageStreaming.id,
+        userMessage: {
+            content: message.request,
+            createdAt: new Date().toISOString()
+        }
+    });
 }
 
 export async function loader({request, params}){
@@ -145,7 +152,7 @@ function ChatMessage({ message, role, datetime, rawText }) {
                             {datetime && (
                                 <Typography variant="caption" sx={{ 
                                     color: isUser ? 'rgba(255,255,255,0.7)' : 'text.secondary' 
-                                }}>
+                                }} suppressHydrationWarning={true}>
                                     {dayjs(datetime).format("MMM DD, h:mm A")}
                                 </Typography>
                             )}
@@ -168,23 +175,103 @@ function ChatMessage({ message, role, datetime, rawText }) {
 }
 
 export default function ConversationDetail(){
-    const { assistantConversation } = useLoaderData();
+    const loaderData = useLoaderData();
     const fetcher = useFetcher();
     const [isAsking, setIsAsking] = useState(false);
+
+    // Handle case where conversation data is null (race condition)
+    if (!loaderData || !loaderData.assistantConversation) {
+        return (
+            <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                height: '50vh'
+            }}>
+                <Typography variant="h6" color="text.secondary">
+                    Loading conversation...
+                </Typography>
+            </Box>
+        );
+    }
+
+    const { assistantConversation } = loaderData;
 
     const formik = useFormik({
         initialValues: {
             request: ''
         },
-        onSubmit: (values) => {
+        onSubmit: async (values) => {
             setIsAsking(true);
             fetcher.submit(jsonToFormData(values), {
                 method: "POST"
             });
-            // Clear the form after submission
             formik.resetForm();
         }
     });
+
+    // Handle streaming completion
+    const handleStreamingComplete = () => {
+        setIsAsking(false);
+        // Refresh to get final state with new message
+        window.location.reload();
+    };
+
+    // If we're currently streaming, show the streaming component
+    if (fetcher.data && fetcher.data.messageId && isAsking) {
+        return (
+            <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                {/* Header with system prompt */}
+                <Paper sx={{ p: 2, mb: 2 }}>
+                    <Accordion defaultExpanded={false}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography variant="h6">
+                                System Prompt
+                                {assistantConversation.systemMessage && (
+                                    <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                        - {assistantConversation.systemMessage.slice(0, 60)}{assistantConversation.systemMessage.length > 60 ? '...' : ''}
+                                    </Typography>
+                                )}
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Typography variant="body2" sx={{ 
+                                backgroundColor: 'grey.50', 
+                                p: 2, 
+                                borderRadius: 1,
+                                fontFamily: 'monospace'
+                            }}>
+                                {assistantConversation.systemMessage || 'No system prompt provided'}
+                            </Typography>
+                        </AccordionDetails>
+                    </Accordion>
+                </Paper>
+
+                {/* Show existing messages and streaming response */}
+                <Paper sx={{ flexGrow: 1, p: 3, mb: 2, overflow: 'auto' }}>
+                    <Box sx={{ maxHeight: '60vh', overflow: 'auto' }}>
+                        {/* Existing messages */}
+                        {assistantConversation.messages.map((msg) => (
+                            <ChatMessage
+                                key={msg.id}
+                                message={msg.content}
+                                role={msg.role}
+                                datetime={msg.createdAt}
+                                rawText={msg.content}
+                            />
+                        ))}
+                        
+                        {/* Streaming response */}
+                        <StreamingResponse
+                            messageId={fetcher.data.messageId}
+                            userMessage={fetcher.data.userMessage}
+                            onComplete={handleStreamingComplete}
+                        />
+                    </Box>
+                </Paper>
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

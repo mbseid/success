@@ -67,9 +67,10 @@ docker compose run backend python manage.py migrate
 ## Common Development Tasks
 
 ### Adding New Features
-- Backend: Add models in `models.py`, update GraphQL schema in `schema.py`
-- Frontend: Create routes in `app/routes/`, components in `app/components/`
+- Backend: Add models in `models.py`, update GraphQL schema in `schema.py`. The backend should only be called fromm the server side of the frontend rendering. The Frontend should NEVER interact with the backend API directly.
+- Frontend: Create routes in `app/routes/`, components in `app/components/`. This should be treated as a full stack app that calls the backend API for it's work. Essentially it's a Server Side Rendering app.
 - Database: Always run migrations after model changes
+
 
 ### Working with AI Features
 - AI capabilities are in `assistant.py`

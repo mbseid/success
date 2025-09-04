@@ -10,3 +10,5 @@ langchain-community
 langchain-openai
 openai
 gunicorn
+channels
+daphne

@@ -172,6 +172,13 @@ class AssistantMessage(SuccessModel):
         ('assistant', 'Assistant'),
     ]
     
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('streaming', 'Streaming'),
+        ('completed', 'Completed'),
+        ('error', 'Error'),
+    ]
+    
     conversation = models.ForeignKey(
         AssistantConversation,
         related_name='assistant_messages',
@@ -179,9 +186,18 @@ class AssistantMessage(SuccessModel):
     )
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     content = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     
     class Meta:
         ordering = ['created_at']
+    
+    @property
+    def is_streaming(self):
+        return self.status == 'streaming'
+    
+    @property
+    def is_completed(self):
+        return self.status == 'completed'
 
 
 class ScratchPad(SingletonModel):

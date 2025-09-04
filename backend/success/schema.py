@@ -1,5 +1,7 @@
 import strawberry
 import strawberry_django
+import asyncio
+from typing import AsyncIterator
 
 from strawberry_django import mutations
 
@@ -91,6 +93,11 @@ class Mutation:
     def sendMessage(self, conversationID: uuid.UUID, request: str) -> AssistantMessage:
         conversation = models.AssistantConversation.objects.get(pk=conversationID)
         return assistant.send_message(conversation, request)
+    
+    @strawberry_django.mutation
+    def sendMessageStreaming(self, conversationID: uuid.UUID, request: str) -> AssistantMessage:
+        conversation = models.AssistantConversation.objects.get(pk=conversationID)
+        return assistant.send_message_streaming(conversation, request)
 
     @strawberry_django.mutation
     def updateScratchPad(self, body: str) -> ScratchPad:
@@ -110,5 +117,26 @@ class Mutation:
     def copyEdit(self, text: str, editorType: Optional[str] = "spotify") -> str:
         return assistant.copy_edit(text, editorType)
 
+# Global event stream for message updates
+message_updates = {}
 
-schema = strawberry.Schema(query=Query, mutation=Mutation)
+@strawberry.type
+class Subscription:
+    @strawberry.subscription
+    async def messageUpdates(self, messageId: str) -> AsyncIterator[AssistantMessage]:
+        """Subscribe to real-time updates for a specific message"""
+        # Create an event queue for this subscription
+        queue = asyncio.Queue()
+        message_updates[messageId] = queue
+        
+        try:
+            while True:
+                # Wait for updates
+                message = await queue.get()
+                yield message
+        except Exception:
+            # Clean up when subscription ends
+            if messageId in message_updates:
+                del message_updates[messageId]
+
+schema = strawberry.Schema(query=Query, mutation=Mutation, subscription=Subscription)

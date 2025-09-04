@@ -1,4 +1,5 @@
 import logging
+import asyncio
 
 from django.conf import settings
 from asgiref.sync import sync_to_async
@@ -35,7 +36,24 @@ class DatabaseErrorHandler(logging.Handler):
             'trace': trace
         }
 
-        SystemLog.objects.create(**kwargs)
+        # Check if we're in an async context
+        try:
+            loop = asyncio.get_running_loop()
+            # We're in an async context, schedule the database operation
+            if loop.is_running():
+                # Create the log entry asynchronously
+                async def create_log():
+                    create_sync = sync_to_async(SystemLog.objects.create)
+                    await create_sync(**kwargs)
+                
+                # Schedule it but don't wait for completion
+                asyncio.create_task(create_log())
+            else:
+                # Loop exists but not running, use sync
+                SystemLog.objects.create(**kwargs)
+        except RuntimeError:
+            # No event loop, we're in sync context
+            SystemLog.objects.create(**kwargs)
 
     def format(self, record):
         if self.formatter:
