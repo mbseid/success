@@ -1,9 +1,9 @@
-from langchain_openai.chat_models import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
 from .models import AssistantConversation, AssistantMessage
 
-llm = ChatOpenAI(model_name="gpt-4o")
-copy_editor_llm = ChatOpenAI(model_name="gpt-4o")
+llm = ChatAnthropic(model_name="claude-sonnet-4-20250514")
+copy_editor_llm = ChatAnthropic(model_name="claude-sonnet-4-20250514")
 
 def start_conversation(system, request):
     """
@@ -26,7 +26,7 @@ def start_conversation(system, request):
     
     # Generate AI response
     messages = [SystemMessage(content=system), HumanMessage(content=request)]
-    response = llm.predict_messages(messages)
+    response = llm.invoke(messages)
     
     # Create assistant message
     assistant_message = AssistantMessage(
@@ -64,7 +64,7 @@ def send_message(conversation, request):
     messages.append(HumanMessage(content=request))
     
     # Generate AI response
-    response = llm.predict_messages(messages)
+    response = llm.invoke(messages)
     
     # Create assistant message
     assistant_message = AssistantMessage(

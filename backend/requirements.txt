@@ -7,8 +7,8 @@ psycopg2
 pyyaml
 langchain
 langchain-community
-langchain-openai
-openai
+langchain-anthropic
+anthropic
 gunicorn
 google-auth
 google-auth-oauthlib

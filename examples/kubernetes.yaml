@@ -4,7 +4,7 @@ metadata:
  name: success-secrets
 type: Opaque
 stringData:
- open-ai-api-key: {{open-ai-api-key}}
+ anthropic-api-key: {{anthropic-api-key}}
  postgres-password: {{password}}
  secret-key: {{secret-key}}
  calendar-encryption-key: {{calendar-encryption-key}}
@@ -77,11 +77,11 @@ spec:
                   key: secret-key
             - name: DJANGO_ALLOWED_HOSTS
               value: "success-backend"
-            - name: OPENAI_API_KEY
+            - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: success-secrets
-                  key: open-ai-api-key
+                  key: anthropic-api-key
             - name: CALENDAR_ENCRYPTION_KEY
               valueFrom:
                 secretKeyRef:
@@ -212,11 +212,11 @@ spec:
                   secretKeyRef:
                     name: success-secrets
                     key: secret-key
-              - name: OPENAI_API_KEY
+              - name: ANTHROPIC_API_KEY
                 valueFrom:
                   secretKeyRef:
                     name: success-secrets
-                    key: open-ai-api-key
+                    key: anthropic-api-key
               - name: CALENDAR_ENCRYPTION_KEY
                 valueFrom:
                   secretKeyRef:

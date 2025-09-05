@@ -15,7 +15,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from langchain_openai.chat_models import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain.schema import HumanMessage, SystemMessage
 
 from .models import GoogleCredentials, CalendarSettings, NotificationSettings, CalendarEmailLog
@@ -23,8 +23,8 @@ from .models import GoogleCredentials, CalendarSettings, NotificationSettings, C
 # If modifying these scopes, delete the existing credentials
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
-# Initialize OpenAI for calendar summaries
-calendar_llm = ChatOpenAI(model_name="gpt-4o")
+# Initialize Anthropic for calendar summaries
+calendar_llm = ChatAnthropic(model_name="claude-sonnet-4-20250514")
 
 
 class CalendarService:
@@ -333,7 +333,7 @@ class CalendarService:
         return "\n".join(summary)
     
     def generate_ai_summary(self, events: List[Dict], date: datetime.date) -> Optional[Dict[str, str]]:
-        """Generate AI summary using OpenAI"""
+        """Generate AI summary using Anthropic Claude"""
         try:
             # Format events for AI
             event_descriptions = []
