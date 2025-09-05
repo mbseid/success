@@ -7,6 +7,9 @@ stringData:
  open-ai-api-key: {{open-ai-api-key}}
  postgres-password: {{password}}
  secret-key: {{secret-key}}
+ calendar-encryption-key: {{calendar-encryption-key}}
+ email-host-password: {{email-host-password}}
+ 
 
 ---
 apiVersion: apps/v1
@@ -79,6 +82,20 @@ spec:
                 secretKeyRef:
                   name: success-secrets
                   key: open-ai-api-key
+            - name: CALENDAR_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: success-secrets
+                  key: calendar-encryption-key
+            - name: EMAIL_HOST_USER
+              value: "{{email-host-user}}"
+            - name: EMAIL_HOST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: success-secrets
+                  key: email-host-password
+            - name: DEFAULT_FROM_EMAIL
+              value: "{{default-from-email}}"
 ---
 kind: Service
 apiVersion: v1
@@ -165,7 +182,7 @@ metadata:
   labels:
     app: success-daily-email
 spec:
-  schedule: "0 7 * * *"  # Run daily at 7:00 AM UTC
+  schedule: "* * * * *" 
   jobTemplate:
     spec:
       template:
@@ -200,6 +217,20 @@ spec:
                   secretKeyRef:
                     name: success-secrets
                     key: open-ai-api-key
+              - name: CALENDAR_ENCRYPTION_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: success-secrets
+                    key: calendar-encryption-key
+              - name: EMAIL_HOST_USER
+                value: "{{email-host-user}}"
+              - name: EMAIL_HOST_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: success-secrets
+                    key: email-host-password
+              - name: DEFAULT_FROM_EMAIL
+                value: "{{default-from-email}}"
           restartPolicy: OnFailure
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1

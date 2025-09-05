@@ -59,6 +59,11 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CALENDAR_ENCRYPTION_KEY=${CALENDAR_ENCRYPTION_KEY}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
     healthcheck:
       test: "pg_isready -U postgres"
       start_period: 20s
