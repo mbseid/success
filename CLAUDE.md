@@ -94,6 +94,16 @@ return json({ ...data });
 - Available functions: `fDate()`, `fDateTime()`, `fDateTimeSuffix()`, `fToNow()`
 - NEVER use `new Date().toLocaleString()` or similar native methods to avoid hydration mismatches
 
+### Page Titles
+- Page titles are defined using the `meta` export function in Remix routes
+- Example format:
+```javascript
+export const meta = ({ data }) => {
+  return [{ title: `${data.person.name} | Person | Success` }];
+};
+```
+- Use the pattern: `[Specific Content] | [Section] | Success` for consistency
+
 ## Environment Variables
 Required environment variables (set in docker-compose.yaml):
 - `SECRET_KEY`: Django secret key

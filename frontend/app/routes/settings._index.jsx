@@ -119,6 +119,10 @@ const SEND_TEST_EMAIL = gql`
   }
 `;
 
+export const meta = () => {
+  return [{ title: "Settings | Success" }];
+};
+
 export async function loader() {
   const { data } = await graphQLClient.query({
     query: SETTINGS_QUERY
@@ -227,8 +231,14 @@ export default function SettingsPage() {
     // For toggles, update both local state and submit immediately
     setLocalNotificationSettings(prev => ({ ...prev, [field]: value }));
     
-    const updateData = { ...notificationSettings, [field]: value };
-    delete updateData.id; // Remove id from update data
+    // Create clean update data with only the allowed fields
+    const updateData = {
+      dailyEmailEnabled: notificationSettings.dailyEmailEnabled,
+      emailAddress: notificationSettings.emailAddress,
+      emailTime: notificationSettings.emailTime,
+      timezone: notificationSettings.timezone,
+      [field]: value
+    };
     
     fetcher.submit(
       { 
