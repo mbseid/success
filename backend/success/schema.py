@@ -164,7 +164,7 @@ class Mutation:
         from .calendar_service import CalendarService
         
         calendar_service = CalendarService()
-        return calendar_service.send_daily_email()
+        return calendar_service.send_daily_email(force_send=True)
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

@@ -35,16 +35,12 @@ class CalendarService:
         self.fernet = Fernet(self.encryption_key)
     
     def _get_encryption_key(self) -> bytes:
-        """Get or create encryption key for storing credentials"""
+        """Get encryption key for storing credentials"""
         key = getattr(settings, 'CALENDAR_ENCRYPTION_KEY', None)
         if not key:
-            # Generate a new key if not provided
-            key = Fernet.generate_key()
-            # In production, this should be stored securely
-            print(f"Generated encryption key: {key.decode()}")
-            print("Add this to your settings: CALENDAR_ENCRYPTION_KEY = '{}'".format(key.decode()))
-        else:
-            key = key.encode() if isinstance(key, str) else key
+            raise ValueError("CALENDAR_ENCRYPTION_KEY environment variable is required. Generate one using: python manage.py generate_encryption_key")
+        
+        key = key.encode() if isinstance(key, str) else key
         return key
     
     def encrypt_credentials(self, credentials: dict) -> str:
@@ -127,58 +123,6 @@ class CalendarService:
             
         except Exception as e:
             raise ValueError(f"Invalid credentials or unable to access Google Calendar: {str(e)}")
-    
-    def complete_oauth_flow(self, account_id: str, account_name: str, 
-                          credentials_json: dict, auth_code: str) -> GoogleCredentials:
-        """
-        Complete OAuth flow with authorization code
-        
-        Args:
-            account_id: Unique identifier for the account
-            account_name: Display name for the account  
-            credentials_json: Google OAuth client credentials
-            auth_code: Authorization code from user
-            
-        Returns:
-            GoogleCredentials object
-        """
-        flow = InstalledAppFlow.from_client_config(
-            credentials_json, 
-            SCOPES,
-            redirect_uri='urn:ietf:wg:oauth:2.0:oob'
-        )
-        
-        # Exchange authorization code for credentials
-        flow.fetch_token(code=auth_code)
-        credentials = flow.credentials
-        
-        # Encrypt and store credentials
-        cred_dict = {
-            'token': credentials.token,
-            'refresh_token': credentials.refresh_token,
-            'token_uri': credentials.token_uri,
-            'client_id': credentials.client_id,
-            'client_secret': credentials.client_secret,
-            'scopes': credentials.scopes
-        }
-        
-        encrypted_creds = self.encrypt_credentials(cred_dict)
-        
-        # Save to database
-        google_creds, created = GoogleCredentials.objects.update_or_create(
-            account_id=account_id,
-            defaults={
-                'account_name': account_name,
-                'encrypted_credentials': encrypted_creds,
-                'is_active': True,
-                'last_used': timezone.now()
-            }
-        )
-        
-        # Auto-discover and save calendars
-        self._discover_calendars(google_creds)
-        
-        return google_creds
     
     def _discover_calendars(self, google_creds: GoogleCredentials):
         """Discover and save available calendars for an account"""
@@ -273,8 +217,8 @@ class CalendarService:
         # Get all active Google credentials
         for google_creds in GoogleCredentials.objects.filter(is_active=True):
             try:
+                print(f"Fetching events for account: {google_creds}")
                 service = self._get_calendar_service(google_creds)
-                
                 # Get events from all enabled calendars for this account
                 for calendar_setting in google_creds.calendar_settings.filter(is_enabled=True):
                     try:
@@ -444,7 +388,8 @@ class CalendarService:
             - null means no response data is available (treat as if I'm attending)
             
             Don't highlight events that have the eventType "focusTime". Those events are for me to know and
-            aren't as important to prepare for.
+            aren't as important to prepare for. Also don't mention the Walk and Talk events, those happen
+            every day and require any preparation.
             
             Please create:
             1. A cheerful greeting that mentions the day of the week
@@ -499,14 +444,14 @@ class CalendarService:
         
         return existing_log is None
     
-    def send_daily_email(self) -> bool:
+    def send_daily_email(self, force_send: bool = False) -> bool:
         """Send daily calendar email if enabled and not already sent"""
         from django.core.mail import send_mail
         from django.template.loader import render_to_string
         
         events, tomorrow_date = self.get_tomorrow_events()
         
-        if not self.should_send_email(tomorrow_date):
+        if not force_send and not self.should_send_email(tomorrow_date):
             print(f"Email already sent for {tomorrow_date} or email disabled")
             return False
         
